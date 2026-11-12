@@ -16,6 +16,31 @@ enum WidgetShared {
     static let minimumInterval: TimeInterval = 900
     static let defaultInterval: TimeInterval = minimumInterval
 
+    /// 来源关键词：空字符串 = 用「收藏」；非空 = 用这个关键词搜出来的那一批图（App 拉取并缓存）。
+    static let sourceKey = "widgetSourceKeyword"
+    static let tapActionKey = "widgetTapAction"
+
+    /// 点击小组件的行为：原地换一张，或打开 App 并用 Viewer 预览当前这张。
+    enum TapAction: String, CaseIterable {
+        case shuffle
+        case openViewer
+    }
+
+    static var sourceKeyword: String {
+        get { defaults?.string(forKey: sourceKey) ?? "" }
+        set { defaults?.set(newValue.trimmingCharacters(in: .whitespacesAndNewlines), forKey: sourceKey) }
+    }
+
+    static var tapAction: TapAction {
+        get { defaults?.string(forKey: tapActionKey).flatMap(TapAction.init(rawValue:)) ?? .shuffle }
+        set { defaults?.set(newValue.rawValue, forKey: tapActionKey) }
+    }
+
+    /// 小组件点击后交给 App 的链接：duopaper://photo/<id>。
+    static func photoURL(_ id: String) -> URL {
+        URL(string: "duopaper://photo/\(id)") ?? deepLink
+    }
+
     struct Item: Codable, Hashable {
         let id: String
         let color: String?
