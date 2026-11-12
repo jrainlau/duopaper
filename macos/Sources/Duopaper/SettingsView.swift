@@ -217,7 +217,7 @@ private struct AboutSettingsView: View {
                 Link("Unsplash License", destination: URL(string: "https://unsplash.com/license")!)
                 Link("Unsplash API 使用规范", destination: URL(string: "https://help.unsplash.com/en/articles/2511245-unsplash-api-guidelines")!)
             } footer: {
-                Text("图片来自 Unsplash 及其摄影师，请遵守相关许可与规范。")
+                Text("Photos provided by Unsplash 及其摄影师。每张图片都标注了摄影师并链接到其 Unsplash 主页；每次保存图片都会按 API 规范向 Unsplash 上报一次下载。")
             }
         }
         .formStyle(.grouped)

@@ -16,7 +16,13 @@ struct Photo: Decodable, Identifiable, Hashable {
         }
     }
     struct User: Decodable, Hashable {
+        struct Links: Decodable, Hashable {
+            let html: URL?
+        }
         let name: String
+        /// 旧版收藏文件里没有这两个字段，所以是可选的；缺失时署名链接退回到照片页。
+        let username: String?
+        let links: Links?
     }
 
     let id: String
@@ -34,7 +40,26 @@ struct Photo: Decodable, Identifiable, Hashable {
     }
 }
 
+/// Unsplash API 规范：所有指向 Unsplash 的链接都要带 utm_source=<应用名>&utm_medium=referral。
+enum UnsplashLink {
+    static let appName = "duopaper"
+
+    static func tagged(_ url: URL) -> URL {
+        guard var c = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return url }
+        var items = (c.queryItems ?? []).filter { $0.name != "utm_source" && $0.name != "utm_medium" }
+        items += [.init(name: "utm_source", value: appName), .init(name: "utm_medium", value: "referral")]
+        c.queryItems = items
+        return c.url ?? url
+    }
+
+    static let home = tagged(URL(string: "https://unsplash.com/")!)
+}
+
 extension Photo {
+    /// 摄影师个人主页（带 UTM）；旧数据没有主页链接时退回到照片页。
+    var photographerURL: URL { UnsplashLink.tagged(user.links?.html ?? links.html) }
+    /// 照片在 Unsplash 上的页面（带 UTM）。
+    var pageURL: URL { UnsplashLink.tagged(links.html) }
     /// Unsplash 返回的主色，用作占位底色。
     var tint: Color {
         guard let color, color.hasPrefix("#"), let v = UInt32(color.dropFirst(), radix: 16) else { return Color.gray.opacity(0.3) }
@@ -65,6 +90,7 @@ extension Photo: Encodable {}
 extension Photo.Urls: Encodable {}
 extension Photo.Links: Encodable {}
 extension Photo.User: Encodable {}
+extension Photo.User.Links: Encodable {}
 
 enum Orientation: String, CaseIterable, Identifiable {
     case any = ""

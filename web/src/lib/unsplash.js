@@ -22,6 +22,14 @@ export function toImageUrl(url) {
 
 export const PER_PAGE = 12;
 
+// Unsplash API 规范：所有指向 Unsplash 的链接都要带 utm_source=<应用名>&utm_medium=referral。
+export function unsplashLink(href) {
+  const url = new URL(href || 'https://unsplash.com/');
+  url.searchParams.set('utm_source', 'duopaper');
+  url.searchParams.set('utm_medium', 'referral');
+  return url.toString();
+}
+
 export class ApiError extends Error {
   constructor(status, detail) {
     super(detail || `HTTP ${status}`);

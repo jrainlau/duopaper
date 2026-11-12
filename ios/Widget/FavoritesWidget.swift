@@ -144,6 +144,16 @@ struct FavoritesWidgetView: View {
             .transition(.opacity)
             .contentTransition(.opacity)
             .animation(.easeInOut(duration: 0.8), value: item.id)
+            // 署名：小组件里只有整块 widgetURL 能点，所以这里是文字署名。
+            .overlay(alignment: .bottomLeading) {
+                Text("\(item.user) / Unsplash")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(.white)
+                    .lineLimit(1)
+                    .shadow(color: .black.opacity(0.6), radius: 2)
+                    .padding(.horizontal, 10)
+                    .padding(.bottom, 8)
+            }
         } else {
             Color.clear
         }

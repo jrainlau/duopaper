@@ -126,6 +126,14 @@ web/public           图标与 manifest
 web/scripts          部署脚本
 ```
 
+## Unsplash 合规
+
+- 每张展示的图片都标注「摄影师 / Unsplash」，摄影师链到其 Unsplash 主页，Unsplash 链到 unsplash.com，所有链接带 `utm_source=duopaper&utm_medium=referral`（Web：`web/src/lib/unsplash.js` 的 `unsplashLink`；原生：`shared/Models.swift` 的 `UnsplashLink`、`shared/Attribution.swift`）。
+- 图片直接 hotlink `images.unsplash.com`，调整参数时保留 `ixid`。
+- 每次保存 / 下载前向 `download_location` 上报一次。
+- 不内置密钥，由用户填自己的 Access Key（Demo 50 次 / 小时）。如果要内置官方 key 或面向大量用户，需先到 Unsplash Developers 申请 Production 权限。
+- 小组件里是文字署名（小组件只能整块点击，无法放可点链接）。
+
 ## 致谢
 
 图片来自 Unsplash 及其摄影师，请遵守 [Unsplash License](https://unsplash.com/license) 与 API 使用规范。

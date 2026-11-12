@@ -131,9 +131,8 @@ private struct ViewerCard: View {
 
     private var bar: some View {
         HStack(spacing: 10) {
-            Text(photo.user.name)
-                .font(.subheadline.weight(.medium))
-                .lineLimit(1)
+            Attribution(photo: photo, style: .full)
+                .minimumScaleFactor(0.8)
             Spacer(minLength: 8)
 
             Button { favorites.toggle(photo) } label: {

@@ -22,13 +22,13 @@ struct PhotoCard: View {
                 }
             }
             .overlay(alignment: .bottomLeading) {
-                if hovering && !isFavorite {
-                    Text(photo.user.name)
-                        .font(.callout.weight(.medium))
-                        .foregroundStyle(.white)
-                        .lineLimit(1)
-                        .shadow(radius: 2)
-                        .padding(10)
+                // 署名（Unsplash API 规范）：悬停时显示，收藏过的也显示。
+                if hovering {
+                    Attribution(photo: photo, style: .compact, onDark: true)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(.black.opacity(0.45), in: Capsule())
+                        .padding(8)
                         .transition(.opacity)
                 }
             }
@@ -66,7 +66,7 @@ struct PhotoCard: View {
             .contextMenu {
                 Button("预览", systemImage: "eye", action: onOpen)
                 Button(isFavorite ? "取消收藏" : "收藏", systemImage: isFavorite ? "star.slash" : "star", action: onToggleFavorite)
-                Link(destination: photo.links.html) {
+                Link(destination: photo.pageURL) {
                     Label("在 Unsplash 中打开", systemImage: "safari")
                 }
             }

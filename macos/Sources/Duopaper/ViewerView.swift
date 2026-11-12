@@ -56,10 +56,7 @@ struct ViewerView: View {
 
     private var bar: some View {
         HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(photo.user.name).font(.headline).lineLimit(1)
-                Link("在 Unsplash 查看", destination: photo.links.html).font(.caption)
-            }
+            Attribution(photo: photo, style: .full)
             Spacer()
             Button {
                 favorites.toggle(photo)

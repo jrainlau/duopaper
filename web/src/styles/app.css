@@ -153,11 +153,26 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
   background: var(--ink-700);
   /* 视口外跳过布局/绘制；占位高度由内联 aspect-ratio 按原图比例给出 */
   content-visibility: auto;
-  cursor: pointer;
   transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
 .card:hover, .card:focus-within { transform: translateY(-3px); box-shadow: var(--shadow-2); z-index: 2; }
-.card:focus-visible { outline: 2px solid var(--lime); outline-offset: 3px; }
+.card__hit { cursor: pointer; }
+.card__hit:focus-visible { outline: 2px solid var(--lime); outline-offset: 3px; border-radius: var(--r-md); }
+/* 署名角标：渐变底保证在任意图片上可读 */
+.card__credit {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; margin: 0;
+  padding: 22px 36px 8px 10px;
+  background: linear-gradient(to top, rgba(0, 0, 0, .55), transparent);
+  color: #fff; font-size: var(--t-xs); font-weight: 500;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  transition: opacity var(--dur) var(--ease);
+}
+.card__credit a { color: #fff; text-decoration: none; }
+.card__credit a:hover, .card__credit a:focus-visible { text-decoration: underline; }
+@media (hover: hover) {
+  .card__credit { opacity: 0; }
+  .card:hover .card__credit, .card:focus-within .card__credit { opacity: 1; }
+}
 .card img { width: 100%; height: auto; display: block; }
 /* 右下角小菊花：图片字节未到本地 / 下载任务进行中 */
 .card__spinner {
