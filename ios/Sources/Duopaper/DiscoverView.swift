@@ -74,19 +74,11 @@ struct DiscoverView: View {
                     }
                     ToolbarItem(placement: .primaryAction) {
                         Button(L("discover.refresh"), systemImage: "arrow.clockwise") { refreshToken += 1 }
-                    }
-                }
-                // 配额耗尽提示：挂在最外层才能盖住工具栏；点气泡外任意位置消失。
-                .overlay {
-                    if showQuotaToast {
-                        Color.clear
-                            .contentShape(.rect)
-                            .onTapGesture { dismissQuotaToast() }
-                            .overlay(alignment: .topTrailing) {
-                                quotaExhaustedToast
-                                    .padding(.top, 104)
-                                    .padding(.trailing, 76)
-                            }
+                        // 配额耗尽提示：系统 popover 锚定在刷新按钮上，iOS 26 自带液态玻璃背景，点外部自动消失。
+                        .popover(isPresented: $showQuotaToast, arrowEdge: .leading) {
+                            quotaExhaustedToast
+                                .presentationCompactAdaptation(.popover)
+                        }
                     }
                 }
         }
@@ -110,29 +102,18 @@ struct DiscoverView: View {
         loadTask = Task {
             await store.reload(key: key, query: query, orientation: orientation)
             // 默认不展示任何配额信息；只有配额耗尽才弹一次气泡。
-            if QuotaTracker.shared.exhausted { showQuotaToastWithAnimation() }
+            if QuotaTracker.shared.exhausted { showQuotaToast = true }
         }
     }
 
-    private func showQuotaToastWithAnimation() {
-        withAnimation(.spring.snappy) { showQuotaToast = true }
-    }
-
-    private func dismissQuotaToast() {
-        withAnimation(.easeOut(duration: 0.2)) { showQuotaToast = false }
-    }
-
-    /// 液态玻璃胶囊，出现在刷新按钮（右上角玻璃工具栏）左侧。
+    /// popover 内容：背景由系统提供（iOS 26 为液态玻璃），这里只放图标和文案。
     private var quotaExhaustedToast: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "hourglass")
-            Text(L("quota.hourlyExhausted"))
-        }
-        .font(.subheadline.weight(.medium))
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .glassEffect(.regular, in: .capsule)
-        .transition(.scale(scale: 0.8, anchor: .topTrailing).combined(with: .opacity))
+        Label(L("quota.hourlyExhausted"), systemImage: "hourglass")
+            .font(.subheadline.weight(.medium))
+            .frame(maxWidth: 280, alignment: .leading)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
     }
 
     @ViewBuilder
