@@ -5,6 +5,8 @@ struct PhotoCard: View {
     let isFavorite: Bool
     let onOpen: () -> Void
     let onToggleFavorite: () -> Void
+    /// 非 nil 时左上角显示「删除」按钮，右键菜单也多一项（缓存画廊用）。
+    var onDelete: (() -> Void)? = nil
 
     var body: some View {
         Rectangle()
@@ -18,6 +20,21 @@ struct PhotoCard: View {
                     .padding(.top, 22)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(LinearGradient(colors: [.clear, .black.opacity(0.55)], startPoint: .top, endPoint: .bottom))
+            }
+            .overlay(alignment: .topLeading) {
+                if let onDelete {
+                    Button(role: .destructive, action: onDelete) {
+                        Image(systemName: "trash")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(Color.white)
+                            .frame(width: 28, height: 28)
+                            .background(.black.opacity(0.32), in: Circle())
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(L("gallery.delete"))
+                }
             }
             .overlay(alignment: .topTrailing) {
                 if isFavorite {
@@ -45,6 +62,9 @@ struct PhotoCard: View {
                 Button(isFavorite ? L("favorites.remove") : L("favorites.add"), systemImage: isFavorite ? "star.slash" : "star", action: onToggleFavorite)
                 Link(destination: photo.pageURL) {
                     Label(L("card.openInUnsplash"), systemImage: "safari")
+                }
+                if let onDelete {
+                    Button(L("gallery.delete"), systemImage: "trash", role: .destructive, action: onDelete)
                 }
             }
     }

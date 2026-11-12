@@ -21,7 +21,11 @@ struct RootView: View {
 
             if let photo = viewer.photo {
                 ViewerDim(shown: viewer.shown) { viewer.close() }
-                ViewerOverlay(photo: photo, shown: viewer.shown) { viewer.close() }
+                ViewerOverlay(
+                    photo: photo,
+                    shown: viewer.shown,
+                    onDelete: viewer.onDelete.map { delete in { delete(photo); viewer.close() } }
+                ) { viewer.close() }
                     .onAppear {
                         withAnimation(.smooth(duration: 0.38)) { viewer.shown = true }
                     }

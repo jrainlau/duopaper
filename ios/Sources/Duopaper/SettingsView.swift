@@ -296,16 +296,19 @@ private struct WidgetSettingsView: View {
                     }
                 }
             }
+
+            if let cache, !cache.photos.isEmpty {
+                NavigationLink {
+                    WidgetCacheGalleryView()
+                } label: {
+                    LabeledContent(L("widget.gallery"), value: L("widget.gallery.count", ["n": "\(cache.photos.count)"]))
+                }
+            }
         } header: {
             Text(L("widget.source"))
         } footer: {
             if mode == .keyword {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(L("widget.source.footer", ["n": "\(WidgetSource.photosPerFetch)"]))
-                    if let cache, cache.keyword.caseInsensitiveCompare(WidgetShared.sourceKeyword) == .orderedSame {
-                        Text(L("widget.source.cached", ["n": "\(cache.photos.count)", "keyword": cache.keyword]))
-                    }
-                }
+                Text(L("widget.source.footer", ["n": "\(WidgetSource.photosPerFetch)"]))
             }
         }
         .appRows()
@@ -443,6 +446,32 @@ private struct ProgressRing: View {
                 .rotationEffect(.degrees(-90))
         }
         .padding(1.5)
+    }
+}
+
+// MARK: - 缓存画廊
+
+/// 小组件关键词缓存里的图片，形态同「收藏」：可收藏、可下载，另外可以从缓存里删除。
+private struct WidgetCacheGalleryView: View {
+    @Environment(FavoritesStore.self) private var favorites
+    @State private var store = WidgetCacheStore()
+
+    var body: some View {
+        Group {
+            if store.photos.isEmpty {
+                ContentUnavailableView(L("widget.gallery.empty.title"), systemImage: "photo.on.rectangle", description: Text(L("widget.gallery.empty.body")))
+            } else {
+                PhotoGridView(photos: store.photos, onDelete: delete)
+            }
+        }
+        .background(Color.appBackground)
+        .navigationTitle(L("widget.gallery"))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func delete(_ photo: Photo) {
+        withAnimation { store.remove(photo, isFavorite: favorites.contains(photo)) }
+        Task { await WidgetSync.shared.sync(favorites: favorites.photos) }
     }
 }
 

@@ -1,4 +1,6 @@
 import Foundation
+import Nuke
+import Observation
 
 /// 小组件「关键词」来源：用关键词拉一次 Unsplash 搜索接口，整批结果（含完整照片信息）缓存在本地。
 ///
@@ -40,6 +42,15 @@ enum WidgetSource {
     static func load() -> WidgetSourceCache? {
         guard let data = try? Data(contentsOf: file) else { return nil }
         return try? JSONDecoder().decode(WidgetSourceCache.self, from: data)
+    }
+
+    /// 从缓存里删掉一张（保留关键词和页码，刷新仍然能换批）。
+    @discardableResult
+    static func remove(id: String) -> WidgetSourceCache? {
+        guard var cache = load() else { return nil }
+        cache.photos.removeAll { $0.id == id }
+        save(cache)
+        return cache
     }
 
     private static func save(_ cache: WidgetSourceCache) {
@@ -94,5 +105,24 @@ enum WidgetSource {
 
     private static func same(_ a: String, _ b: String) -> Bool {
         a.caseInsensitiveCompare(b) == .orderedSame
+    }
+}
+
+/// 缓存画廊的数据：当前关键词缓存里的那批图。删除时同步清掉这张图在 Nuke 里的图片缓存
+/// （已收藏的图保留，收藏页要用）；小组件缩略图由 WidgetSync 对账时清理。
+@MainActor
+@Observable
+final class WidgetCacheStore {
+    private(set) var photos: [Photo]
+
+    init() { photos = WidgetSource.load()?.photos ?? [] }
+
+    func remove(_ photo: Photo, isFavorite: Bool) {
+        photos.removeAll { $0.id == photo.id }
+        WidgetSource.remove(id: photo.id)
+        guard !isFavorite else { return }
+        for url in [UnsplashClient.thumbURL(photo), UnsplashClient.previewURL(photo)] {
+            ImagePipeline.shared.cache.removeCachedImage(for: ImageRequest(url: url))
+        }
     }
 }

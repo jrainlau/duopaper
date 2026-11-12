@@ -5,6 +5,8 @@ struct PhotoGridView: View {
     let photos: [Photo]
     var footer: AnyView? = nil
     var onNearEnd: (() -> Void)? = nil
+    /// 传入后每张图左上角出现删除按钮，预览里也有（缓存画廊用）。
+    var onDelete: ((Photo) -> Void)? = nil
 
     @Environment(FavoritesStore.self) private var favorites
     @Environment(ViewerState.self) private var viewer
@@ -22,8 +24,9 @@ struct PhotoGridView: View {
             PhotoCard(
                 photo: photo,
                 isFavorite: favorites.contains(photo),
-                onOpen: { viewer.open(photo) },
-                onToggleFavorite: { favorites.toggle(photo) }
+                onOpen: { viewer.open(photo, onDelete: onDelete) },
+                onToggleFavorite: { favorites.toggle(photo) },
+                onDelete: onDelete.map { delete in { delete(photo) } }
             )
             .onAppear { if tail.contains(photo.id) { onNearEnd?() } }
         }

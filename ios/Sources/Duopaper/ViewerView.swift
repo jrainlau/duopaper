@@ -9,12 +9,15 @@ import SwiftUI
 final class ViewerState {
     var photo: Photo?
     var shown = false
+    /// 有值时预览左上角出现「删除」按钮（目前只有缓存画廊用）；预览收起后清空。
+    var onDelete: ((Photo) -> Void)?
     private var closing = false
 
-    func open(_ photo: Photo) {
+    func open(_ photo: Photo, onDelete: ((Photo) -> Void)? = nil) {
         guard self.photo == nil else { return }
         closing = false
         shown = false
+        self.onDelete = onDelete
         self.photo = photo
     }
 
@@ -25,6 +28,7 @@ final class ViewerState {
         Task {
             try? await Task.sleep(for: .milliseconds(170))
             photo = nil
+            onDelete = nil
             closing = false
         }
     }
@@ -51,6 +55,7 @@ struct ViewerDim: View {
 struct ViewerOverlay: View {
     let photo: Photo
     let shown: Bool
+    var onDelete: (() -> Void)? = nil
     let onClose: () -> Void
 
     var body: some View {
@@ -65,7 +70,7 @@ struct ViewerOverlay: View {
             let imageWidth = max(1, min(maxWidth, maxImageHeight * ratio))
             let cardWidth = max(imageWidth, min(maxWidth, 340))
 
-            ViewerCard(photo: photo, imageWidth: imageWidth, imageHeight: imageWidth / ratio, barHeight: barHeight, onClose: onClose)
+            ViewerCard(photo: photo, imageWidth: imageWidth, imageHeight: imageWidth / ratio, barHeight: barHeight, onDelete: onDelete, onClose: onClose)
                 .frame(width: cardWidth)
                 .scaleEffect(shown ? 1 : 0.9)
                 .opacity(shown ? 1 : 0)
@@ -80,6 +85,7 @@ private struct ViewerCard: View {
     let imageWidth: CGFloat
     let imageHeight: CGFloat
     let barHeight: CGFloat
+    var onDelete: (() -> Void)? = nil
     let onClose: () -> Void
 
     @AppStorage("accessKey") private var accessKey = ""
@@ -107,6 +113,16 @@ private struct ViewerCard: View {
                 .buttonStyle(.glass)
                 .padding(12)
                 .accessibilityLabel(L("common.close"))
+            }
+            .overlay(alignment: .topLeading) {
+                if let onDelete {
+                    Button(role: .destructive, action: onDelete) {
+                        Image(systemName: "trash").frame(width: 22, height: 22)
+                    }
+                    .buttonStyle(.glass)
+                    .padding(12)
+                    .accessibilityLabel(L("gallery.delete"))
+                }
             }
             .overlay(alignment: .top) {
                 if let toast {
