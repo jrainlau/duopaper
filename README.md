@@ -30,24 +30,55 @@ macos/  macOS 原生版（SwiftUI，遵循 Apple HIG）
 shared/ iOS 与 macOS 共用的 Swift 代码（模型、Unsplash 请求、收藏、瀑布流）
 ```
 
+## 安装与分发（没有开发者账号）
+
+| 平台 | 自己用 | 给别人用 |
+|---|---|---|
+| Web | 打开 https://jrainlau.github.io/duopaper/ | 同左，发链接即可 |
+| macOS | `bash macos/scripts/build-app.sh --install`，装到 `/Applications`，可长期使用 | 在 GitHub Releases 下载 DMG（`发 MacOS` 流程见 `AGENTS.md`），未公证，对方首次要右键「打开」，提示已损坏时执行 `xattr -cr /Applications/Duopaper.app` |
+| iOS | 用 Xcode 个人 Team 装到自己的手机，**7 天过期**，到期后重新运行一次即可（数据不丢） | 免费账号无法分发。可以让对方自己 clone 仓库用 Xcode 装，或者直接用 Web 版（可添加到主屏幕） |
+
+要想让别人在 iOS 上方便地安装（TestFlight / App Store / 免 7 天限制），需要付费的 Apple Developer Program（99 美元 / 年）。
+
 ## macOS 版
 
-需要 Xcode。无需开发者账号，使用 ad-hoc 签名，仅供本机使用：
+需要 Xcode。使用 ad-hoc 签名，不需要开发者账号：
 
 ```bash
 bash macos/scripts/build-app.sh            # 生成 macos/build/Duopaper.app
 bash macos/scripts/build-app.sh --install  # 同时安装到 /Applications
 ```
 
-首次打开如被 Gatekeeper 拦截，右键 App 选「打开」。Access Key 在 App 的「设置」（⌘,）中填写。
+用 Xcode 调试：打开 `macos/Duopaper.xcodeproj`，⌘R。Access Key 在 App 的「设置」（⌘,）里填，保存时会先联网验证。
 
 ## iOS 版（含 iPhone Duo）
 
-用 Xcode 打开 `ios/Duopaper.xcodeproj`，选 iPhone Duo 模拟器（Device Hub 里可开合、旋转），⌘R 运行。Access Key 在「设置」页填写。真机安装需要在 Xcode 的 Signing 里登录 Apple ID 选个人 Team。
+用 Xcode 打开 `ios/Duopaper.xcodeproj`，设备选 iPhone Duo 模拟器（Device Hub 里可开合、旋转）或自己的手机，⌘R 运行。
 
-小组件：桌面可添加「收藏轮播」小组件（小 / 中），渐隐渐显轮播收藏里的图片，切换间隔在设置的「小组件」栏目里调，点击直接进入收藏页。需要给 `Duopaper` 和 `DuopaperWidgetExtension` 两个 target 开启同一个 App Group（`group.com.jrainlau.duopaper`）。保存的图片会放进名为 Duopaper 的相册。
+**装到自己的手机（免费账号）**
+1. 手机开启开发者模式（设置 → 隐私与安全性），用数据线连 Mac 并信任。
+2. Xcode → Settings → Accounts 登录 Apple ID。
+3. 选中 `Duopaper` 和 `DuopaperWidgetExtension` 两个 target，Signing & Capabilities 里 Team 选个人团队；两个 target 都要有同一个 App Group：`group.com.jrainlau.duopaper`。
+4. 选中手机，⌘R。第一次要在手机「设置 → 通用 → VPN 与设备管理」里信任开发者。
+5. 免费账号签名 7 天过期，过期后 App 打不开，重新 ⌘R 一次即可。
 
-适配方式：只用标准 `TabView`（`.sidebarAdaptable`）、`NavigationStack`、sheet 与工具栏，按尺寸类而不是设备型号布局；外屏是 iPhone 布局，内屏自动变 regular 宽度，系统会把 Tab 栏和工具栏移到侧边；瀑布流在折叠屏上用偶数列。
+功能：瀑布流浏览、收藏、预览与下载（保存到名为 Duopaper 的相册）、搜索历史、「收藏轮播」桌面小组件（小 / 中，点击进入收藏，切换间隔在设置里调）。列表只在手动刷新、换分类 / 搜索 / 方向时加载。
+
+适配 iPhone Duo：只用标准 `TabView`、`NavigationStack` 与工具栏，按尺寸类而不是设备型号布局；瀑布流在折叠屏上用偶数列。
+
+## 改颜色与图标
+
+| 要改的 | 位置 |
+|---|---|
+| App 图标源图 | `web/wallpaper-h5-icons/app/app-icon-1024.png`（1024×1024） |
+| 重新生成 macOS 图标 | `bash macos/scripts/make-icon.sh`（需要 `pip3 install pillow`），输出 `macos/Sources/Duopaper/AppIcon.icns` |
+| 重新生成 iOS 图标 | `bash ios/scripts/make-icon.sh`，输出 `ios/Sources/Duopaper/Assets.xcassets/AppIcon.appiconset/AppIcon.png` |
+| iOS 强调色 | `ios/Sources/Duopaper/Assets.xcassets/AccentColor.colorset/Contents.json` |
+| macOS 强调色 | 默认跟随系统设置里的强调色，无需修改 |
+| 分类图标颜色 | `shared/Models.swift` 里 `Topic.all` 的 `tint` |
+| Web 配色 | `web/src/styles/tokens.css` |
+
+改完图标后重新构建并安装；iOS 桌面图标缓存有时需要删掉 App 重装才会更新。
 
 ## Web 开发（在 web/ 目录下）
 
