@@ -7,6 +7,7 @@ import { useAccessKey } from './hooks/useAccessKey.js';
 import { useWallpapers } from './hooks/useWallpapers.js';
 import { savePhoto } from './lib/download.js';
 import { isIOS, isTouchDevice } from './lib/device.js';
+import { t } from './i18n/index.js';
 
 export default function App() {
   const { key, setKey, clearKey, configured } = useAccessKey();
@@ -44,9 +45,9 @@ export default function App() {
     setNotice(null);
     // iOS 上先把「怎么存进相册」讲清楚，再等图片下载与分享面板。
     if (isIOS()) {
-      setNotice({ tone: 'ok', text: '准备图片中… 存入相册：在分享面板选「存储图像」，或长按图片选「存储到照片」' });
+      setNotice({ tone: 'ok', text: t('app.iosPrepare') });
     }
-    setSaving({ id: photo.id, label: '取片中' });
+    setSaving({ id: photo.id, label: t('app.fetchingLabel') });
     try {
       const result = await savePhoto({ photo, size: wall.size, key });
       if (result.method !== 'cancelled') {
@@ -54,14 +55,14 @@ export default function App() {
         setNotice({
           tone: result.method === 'fallback' ? 'warn' : 'ok',
           text: result.method === 'share'
-            ? `已调起分享 · ${result.filename} · ${mb} MB · 面板里选「存储图像」即存入相册`
+            ? t('app.shared', { filename: result.filename, mb })
             : result.method === 'fallback'
-              ? `已保存到「文件」 · ${result.filename} · ${mb} MB · 存相册请长按图片选「存储到照片」`
-              : `已保存 ${result.filename} · ${mb} MB`,
+              ? t('app.savedToFiles', { filename: result.filename, mb })
+              : t('app.saved', { filename: result.filename, mb }),
         });
       }
     } catch (err) {
-      setNotice({ tone: 'error', text: `下载失败：${err.message}` });
+      setNotice({ tone: 'error', text: t('app.downloadFailed', { message: err.message }) });
     } finally {
       setSaving({ id: null, label: '' });
     }
@@ -88,10 +89,10 @@ export default function App() {
 
         <div ref={sentinelRef} className="load-more" role="status" aria-live="polite">
           {wall.loadingMore
-            ? '正在加载更多…'
+            ? t('loadMore.loading')
             : wall.hasMore
-              ? '继续下滑，自动加载'
-              : wall.items.length ? '已经到底了' : ''}
+              ? t('loadMore.hint')
+              : wall.items.length ? t('loadMore.end') : ''}
         </div>
       </main>
 

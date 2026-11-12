@@ -98,10 +98,10 @@ enum Orientation: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .any: "全部"
-        case .landscape: "横屏"
-        case .portrait: "竖屏"
-        case .squarish: "方图"
+        case .any: L("orientation.any")
+        case .landscape: L("orientation.landscape")
+        case .portrait: L("orientation.portrait")
+        case .squarish: L("orientation.squarish")
         }
     }
 }
@@ -111,19 +111,21 @@ enum DownloadSize: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .standard: "标准"
+        case .standard: L("size.standard")
         case .w2560: "2.5K"
         case .w3840: "4K"
-        case .raw: "原始"
+        case .raw: L("size.raw")
         }
     }
 }
 
 struct Topic: Identifiable, Hashable {
-    let title: String
+    let titleKey: String
     let query: String
     let symbol: String
     var id: String { query }
+    /// 标题走文案表，随语言切换。
+    var title: String { L(titleKey) }
 
     /// 分类菜单里固定保留的三个，其余靠搜索；搜过的词进入「历史搜索」。
     static var pinned: [Topic] {
@@ -131,17 +133,17 @@ struct Topic: Identifiable, Hashable {
     }
 
     static let all: [Topic] = [
-        .init(title: "精选", query: "wallpaper", symbol: "star"),
-        .init(title: "极简", query: "minimal", symbol: "circle.dashed"),
-        .init(title: "秋日", query: "autumn", symbol: "leaf"),
-        .init(title: "自然", query: "nature", symbol: "mountain.2"),
-        .init(title: "3D", query: "3d render", symbol: "cube"),
-        .init(title: "实验", query: "experimental", symbol: "flask"),
-        .init(title: "胶片", query: "film photography", symbol: "film"),
-        .init(title: "街拍", query: "street photography", symbol: "figure.walk"),
-        .init(title: "建筑", query: "architecture", symbol: "building.2"),
-        .init(title: "纹理", query: "textures", symbol: "square.grid.3x3"),
-        .init(title: "旅行", query: "travel", symbol: "airplane"),
-        .init(title: "人物", query: "portrait", symbol: "person.crop.square"),
+        .init(titleKey: "topic.wallpaper", query: "wallpaper", symbol: "star"),
+        .init(titleKey: "topic.minimal", query: "minimal", symbol: "circle.dashed"),
+        .init(titleKey: "topic.autumn", query: "autumn", symbol: "leaf"),
+        .init(titleKey: "topic.nature", query: "nature", symbol: "mountain.2"),
+        .init(titleKey: "topic.3d render", query: "3d render", symbol: "cube"),
+        .init(titleKey: "topic.experimental", query: "experimental", symbol: "flask"),
+        .init(titleKey: "topic.film photography", query: "film photography", symbol: "film"),
+        .init(titleKey: "topic.street photography", query: "street photography", symbol: "figure.walk"),
+        .init(titleKey: "topic.architecture", query: "architecture", symbol: "building.2"),
+        .init(titleKey: "topic.textures", query: "textures", symbol: "square.grid.3x3"),
+        .init(titleKey: "topic.travel", query: "travel", symbol: "airplane"),
+        .init(titleKey: "topic.portrait", query: "portrait", symbol: "person.crop.square"),
     ]
 }

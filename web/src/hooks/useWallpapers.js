@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { buildSearchUrl, describeError, requestJson } from '../lib/unsplash.js';
 import { cacheDeletePrefix, cacheGet, cacheKey, cachePrefix, cachePut, isFresh } from '../lib/cache.js';
 import { migrateLegacyKey } from '../lib/storage.js';
+import { t } from '../i18n/index.js';
 
 const MAX_PAGE = 50;
 const PREF_KEY = 'duopaper.prefs';
@@ -46,8 +47,9 @@ export function useWallpapers(key) {
     setPhase('ready');
     // 追加页命中缓存时不要让整条状态倒退回「缓存」——本次会话已经联网刷新过。
     setMessage((previous) => {
-      const source = append && previous.includes('在线') ? '在线' : (fromCache ? '缓存' : '在线');
-      return `${source} · 共 ${payload.total} 张 · 已加载 ${loaded} 张`;
+      const wasOnline = previous.startsWith(t('status.online'));
+      const source = wasOnline ? t('status.online') : (fromCache ? t('status.cache') : t('status.online'));
+      return t('status.summary', { source, total: payload.total, loaded });
     });
   }, []);
 
@@ -58,7 +60,7 @@ export function useWallpapers(key) {
     busyRef.current = true;
 
     if (append) setLoadingMore(true);
-    else { setPhase('loading'); setMessage('正在取片…'); }
+    else { setPhase('loading'); setMessage(t('status.fetching')); }
 
     const pageKey = cacheKey({ query, orientation, page: targetPage });
 
@@ -138,7 +140,7 @@ export function useWallpapers(key) {
       setTotal(0);
       setHasMore(false);
       setPhase('idle');
-      setMessage('未配置 Access Key：填入后即可开始取片。');
+      setMessage(t('status.noKey'));
       return undefined;
     }
 

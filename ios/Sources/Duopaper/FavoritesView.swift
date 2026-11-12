@@ -7,13 +7,13 @@ struct FavoritesView: View {
         NavigationStack {
             Group {
                 if favorites.photos.isEmpty {
-                    ContentUnavailableView("还没有收藏", systemImage: "star", description: Text("点图片右上角的星即可收藏。"))
+                    ContentUnavailableView(L("favorites.empty.title"), systemImage: "star", description: Text(L("favorites.empty.body")))
                 } else {
                     PhotoGridView(photos: favorites.photos)
                 }
             }
             .background(Color.appBackground)
-            .navigationTitle("收藏")
+            .navigationTitle(L("tab.favorites"))
             .navigationBarTitleDisplayMode(.inline)
         }
     }

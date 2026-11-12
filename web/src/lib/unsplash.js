@@ -1,4 +1,5 @@
 import { isIOS } from './device.js';
+import { t } from '../i18n/index.js';
 
 const PUBLIC_API = 'https://api.unsplash.com';
 const PUBLIC_IMG = 'https://images.unsplash.com';
@@ -129,9 +130,9 @@ export function extFromType(contentType) {
 
 export function describeError(err) {
   if (err instanceof ApiError) {
-    if (err.status === 401) return 'Access Key 无效或尚未生效。请确认填的是 Access Key（不是 Secret Key），并到 Unsplash Developers 检查应用状态。';
-    if (err.status === 403 || err.status === 429) return '请求配额已用尽（Demo 应用 50 次 / 小时），请等待重置或申请提高限额。';
-    return `请求失败（HTTP ${err.status}）：${err.detail || err.message}`;
+    if (err.status === 401) return t('error.invalidKey');
+    if (err.status === 403 || err.status === 429) return t('error.quota');
+    return t('error.http', { code: err.status, detail: err.detail || err.message });
   }
-  return `网络请求失败：${err.message}。请检查网络与跨域设置。`;
+  return t('error.network', { message: err.message });
 }

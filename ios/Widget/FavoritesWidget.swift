@@ -2,6 +2,39 @@ import ImageIO
 import SwiftUI
 import WidgetKit
 
+// 小组件进程不编译 shared/，这里放一份最小文案表；语言跟随系统（小组件没有设置入口）。
+private enum WidgetL10n {
+    static func t(_ key: String) -> String {
+        for lang in Locale.preferredLanguages {
+            let l = lang.lowercased()
+            if l.hasPrefix("zh") {
+                let hant = l.contains("hant") || l.contains("-tw") || l.contains("-hk") || l.contains("-mo")
+                return (hant ? hantTable : hansTable)[key] ?? key
+            }
+            if l.hasPrefix("en") { return enTable[key] ?? key }
+        }
+        return enTable[key] ?? key
+    }
+
+    private static let enTable = [
+        "widget.emptyPrompt": "Favorite some photos and they’ll rotate here",
+        "widget.configName": "Favorites Carousel",
+        "widget.configDesc": "Rotate through your favorite photos; tap to open Favorites in Duopaper.",
+    ]
+
+    private static let hansTable = [
+        "widget.emptyPrompt": "收藏几张图片，这里会轮播",
+        "widget.configName": "收藏轮播",
+        "widget.configDesc": "轮播你收藏的图片，点一下回到 Duopaper 的收藏。",
+    ]
+
+    private static let hantTable = [
+        "widget.emptyPrompt": "收藏幾張圖片，這裡會輪播",
+        "widget.configName": "收藏輪播",
+        "widget.configDesc": "輪播你收藏的圖片，點一下回到 Duopaper 的收藏。",
+    ]
+}
+
 struct FavoriteEntry: TimelineEntry {
     let date: Date
     /// nil 表示占位（系统要求先给个占位）或没有收藏。
@@ -120,7 +153,7 @@ struct FavoritesWidgetView: View {
                 Image(systemName: "star.fill")
                     .font(.title2)
                     .foregroundStyle(.yellow)
-                Text("收藏几张图片，这里会轮播")
+                Text(WidgetL10n.t("widget.emptyPrompt"))
                     .font(.footnote.weight(.medium))
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
@@ -177,8 +210,8 @@ struct FavoritesWidget: Widget {
         StaticConfiguration(kind: WidgetShared.kind, provider: FavoritesProvider()) { entry in
             FavoritesWidgetView(entry: entry)
         }
-        .configurationDisplayName("收藏轮播")
-        .description("轮播你收藏的图片，点一下回到 Duopaper 的收藏。")
+        .configurationDisplayName(WidgetL10n.t("widget.configName"))
+        .description(WidgetL10n.t("widget.configDesc"))
         .supportedFamilies([.systemSmall, .systemMedium])
         .contentMarginsDisabled()
     }

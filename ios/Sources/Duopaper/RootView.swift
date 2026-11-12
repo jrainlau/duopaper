@@ -50,13 +50,13 @@ struct RootView: View {
 
     private var tabs: some View {
         TabView(selection: $tab) {
-            Tab("发现", systemImage: "photo.on.rectangle.angled", value: AppTab.discover) {
+            Tab(L("tab.discover"), systemImage: "photo.on.rectangle.angled", value: AppTab.discover) {
                 DiscoverView()
             }
-            Tab("收藏", systemImage: "star", value: AppTab.favorites) {
+            Tab(L("tab.favorites"), systemImage: "star", value: AppTab.favorites) {
                 FavoritesView()
             }
-            Tab("设置", systemImage: "gearshape", value: AppTab.settings) {
+            Tab(L("tab.settings"), systemImage: "gearshape", value: AppTab.settings) {
                 SettingsView(onVerified: { tab = .discover })
             }
         }

@@ -42,7 +42,7 @@ struct ViewerDim: View {
             .contentShape(Rectangle())
             .onTapGesture(perform: onTap)
             .accessibilityAddTraits(.isButton)
-            .accessibilityLabel("关闭预览")
+            .accessibilityLabel(L("viewer.closePreview"))
     }
 }
 
@@ -106,7 +106,7 @@ private struct ViewerCard: View {
                 }
                 .buttonStyle(.glass)
                 .padding(12)
-                .accessibilityLabel("关闭")
+                .accessibilityLabel(L("common.close"))
             }
             .overlay(alignment: .top) {
                 if let toast {
@@ -141,17 +141,17 @@ private struct ViewerCard: View {
                     .frame(width: 22, height: 22)
             }
             .buttonStyle(.glass)
-            .accessibilityLabel(isFavorite ? "取消收藏" : "收藏")
+            .accessibilityLabel(isFavorite ? L("favorites.remove") : L("favorites.add"))
 
             Menu {
-                Picker("清晰度", selection: $sizeRaw) {
+                Picker(L("viewer.quality"), selection: $sizeRaw) {
                     ForEach(DownloadSize.allCases) { Text($0.title).tag($0.rawValue) }
                 }
             } label: {
                 Text(size.title).frame(minWidth: 30)
             }
             .buttonStyle(.glass)
-            .accessibilityLabel("清晰度")
+            .accessibilityLabel(L("viewer.quality"))
 
             Button(action: download) {
                 Group {
@@ -162,7 +162,7 @@ private struct ViewerCard: View {
             }
             .buttonStyle(.glassProminent)
             .disabled(downloading)
-            .accessibilityLabel("保存到相册")
+            .accessibilityLabel(L("viewer.saveToAlbum"))
         }
         .padding(.horizontal, 14)
         .frame(height: barHeight)
@@ -176,9 +176,9 @@ private struct ViewerCard: View {
                 let file = try await WallpaperStore.download(photo, size: size, key: accessKey, into: FileManager.default.temporaryDirectory)
                 defer { try? FileManager.default.removeItem(at: file) }
                 try await saveToPhotos(file)
-                show("已保存到相册「\(Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "Duopaper")」")
+                show(L("viewer.savedAlbum", ["album": Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "Duopaper"]))
             } catch {
-                show("保存失败：\(error.localizedDescription)")
+                show(L("viewer.saveFailed", ["error": error.localizedDescription]))
             }
         }
     }
@@ -201,7 +201,7 @@ private struct ViewerCard: View {
         if !canUseAlbum {
             status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
             guard status == .authorized || status == .limited else {
-                throw NSError(domain: "Duopaper", code: 1, userInfo: [NSLocalizedDescriptionKey: "没有相册写入权限，请在系统设置中允许。"])
+                throw NSError(domain: "Duopaper", code: 1, userInfo: [NSLocalizedDescriptionKey: L("viewer.noAlbumPermission")])
             }
             canUseAlbum = false
         }

@@ -1,8 +1,9 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { displayUrlFor, unsplashLink } from '../lib/unsplash.js';
+import { t } from '../i18n/index.js';
 
 function PhotoCard({ photo, index, size, onSave, saving }) {
-  const author = photo.user?.name || 'Unsplash 摄影师';
+  const author = photo.user?.name || t('card.unsplashPhotographer');
   const src = displayUrlFor(photo, size);
   const [loaded, setLoaded] = useState(false);
   const imgRef = useRef(null);
@@ -33,7 +34,7 @@ function PhotoCard({ photo, index, size, onSave, saving }) {
         className="card__hit"
         role="button"
         tabIndex={0}
-        aria-label={busy ? `下载 ${author} 的壁纸（图片加载中）` : `下载 ${author} 的壁纸`}
+        aria-label={busy ? t('card.downloadByLoading', { author }) : t('card.downloadBy', { author })}
         onClick={activate}
         onKeyDown={(event) => {
           if (event.key === 'Enter' || event.key === ' ') {
@@ -46,7 +47,7 @@ function PhotoCard({ photo, index, size, onSave, saving }) {
         <img
           ref={imgRef}
           src={src}
-          alt={photo.alt_description || photo.description || 'Unsplash 壁纸'}
+          alt={photo.alt_description || photo.description || t('card.unsplashWallpaper')}
           width={photo.width}
           height={photo.height}
           loading={index < 4 ? 'eager' : 'lazy'}

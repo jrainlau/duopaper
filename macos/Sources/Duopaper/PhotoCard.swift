@@ -44,8 +44,8 @@ struct PhotoCard: View {
                     }
                     .buttonStyle(.plain)
                     .padding(8)
-                    .help(isFavorite ? "取消收藏" : "收藏")
-                    .accessibilityLabel(isFavorite ? "取消收藏" : "收藏")
+                    .help(isFavorite ? L("favorites.remove") : L("favorites.add"))
+                    .accessibilityLabel(isFavorite ? L("favorites.remove") : L("favorites.add"))
                     .transition(.scale(scale: 0.8).combined(with: .opacity))
                 }
             }
@@ -61,13 +61,13 @@ struct PhotoCard: View {
             .animation(.spring(response: 0.3, dampingFraction: 0.8), value: hovering)
             .onTapGesture(perform: onOpen)
             .accessibilityElement(children: .contain)
-            .accessibilityLabel("\(photo.user.name) 的壁纸")
+            .accessibilityLabel(L("card.wallpaperBy", ["name": photo.user.name]))
             .accessibilityAddTraits(.isButton)
             .contextMenu {
-                Button("预览", systemImage: "eye", action: onOpen)
-                Button(isFavorite ? "取消收藏" : "收藏", systemImage: isFavorite ? "star.slash" : "star", action: onToggleFavorite)
+                Button(L("card.preview"), systemImage: "eye", action: onOpen)
+                Button(isFavorite ? L("favorites.remove") : L("favorites.add"), systemImage: isFavorite ? "star.slash" : "star", action: onToggleFavorite)
                 Link(destination: photo.pageURL) {
-                    Label("在 Unsplash 中打开", systemImage: "safari")
+                    Label(L("card.openInUnsplash"), systemImage: "safari")
                 }
             }
     }

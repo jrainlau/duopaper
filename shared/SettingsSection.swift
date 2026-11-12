@@ -1,22 +1,24 @@
 import SwiftUI
 
 enum SettingsSection: String, CaseIterable, Identifiable {
-    case key, history, download, widget, cache, about
+    case language, key, history, download, widget, cache, about
     var id: String { rawValue }
 
     var title: String {
         switch self {
-        case .key: "Unsplash 密钥"
-        case .history: "搜索历史"
-        case .download: "下载"
-        case .widget: "小组件"
-        case .cache: "缓存"
-        case .about: "关于"
+        case .language: L("settings.language")
+        case .key: L("settings.section.key")
+        case .history: L("settings.section.history")
+        case .download: L("settings.section.download")
+        case .widget: L("settings.section.widget")
+        case .cache: L("settings.section.cache")
+        case .about: L("settings.section.about")
         }
     }
 
     var symbol: String {
         switch self {
+        case .language: "globe"
         case .key: "key"
         case .history: "clock.arrow.circlepath"
         case .download: "arrow.down.circle"

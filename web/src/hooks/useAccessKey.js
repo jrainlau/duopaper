@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { migrateLegacyKey } from '../lib/storage.js';
+import { t } from '../i18n/index.js';
 
 const STORAGE_KEY = 'duopaper.accessKey';
 const LEGACY_KEY = 'darkroom.accessKey';
@@ -12,7 +13,7 @@ export function useAccessKey() {
 
   const setKey = useCallback((value) => {
     const next = value.trim();
-    if (!next) throw new Error('Access Key 不能为空，本页面不会使用默认密钥。');
+    if (!next) throw new Error(t('setup.emptyKeyError'));
     localStorage.setItem(STORAGE_KEY, next);
     setKeyState(next);
   }, []);

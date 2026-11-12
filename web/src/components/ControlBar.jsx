@@ -1,36 +1,37 @@
 import { useEffect, useRef, useState } from 'react';
 import Icon from './Icon.jsx';
+import { t } from '../i18n/index.js';
 
 // 参考横向分类条，内容用本项目的暗色 + 酸橙高亮文字风格重画。
 // 每个标签对应一个搜索关键词，点击即切换列表（优先走 IndexedDB 缓存）。
 const TOPICS = [
-  { label: '精选', query: 'wallpaper', icon: 'featured' },
-  { label: '极简', query: 'minimal' },
-  { label: '秋日', query: 'autumn' },
-  { label: '自然', query: 'nature' },
-  { label: '3D', query: '3d render' },
-  { label: '实验', query: 'experimental' },
-  { label: '胶片', query: 'film photography' },
-  { label: '街拍', query: 'street photography' },
-  { label: '建筑', query: 'architecture' },
-  { label: '纹理', query: 'textures' },
-  { label: '旅行', query: 'travel' },
-  { label: '人物', query: 'portrait' },
+  { key: 'topic.wallpaper', query: 'wallpaper', icon: 'featured' },
+  { key: 'topic.minimal', query: 'minimal' },
+  { key: 'topic.autumn', query: 'autumn' },
+  { key: 'topic.nature', query: 'nature' },
+  { key: 'topic.3d render', query: '3d render' },
+  { key: 'topic.experimental', query: 'experimental' },
+  { key: 'topic.film photography', query: 'film photography' },
+  { key: 'topic.street photography', query: 'street photography' },
+  { key: 'topic.architecture', query: 'architecture' },
+  { key: 'topic.textures', query: 'textures' },
+  { key: 'topic.travel', query: 'travel' },
+  { key: 'topic.portrait', query: 'portrait' },
 ];
 
 const ORIENTATIONS = [
-  { value: 'landscape', label: '横屏', icon: 'landscape' },
-  { value: 'portrait', label: '竖屏', icon: 'portrait' },
-  { value: 'squarish', label: '方图', icon: 'square' },
-  { value: '', label: '全部', icon: 'category' },
+  { value: 'landscape', key: 'orientation.landscape', icon: 'landscape' },
+  { value: 'portrait', key: 'orientation.portrait', icon: 'portrait' },
+  { value: 'squarish', key: 'orientation.squarish', icon: 'square' },
+  { value: '', key: 'orientation.any', icon: 'category' },
 ];
 
 const SIZES = [
-  { value: 'thumb', label: '缩略图' },
-  { value: 'full', label: '标准' },
-  { value: '2560', label: '2.5K' },
-  { value: '3840', label: '4K' },
-  { value: 'raw', label: '原始' },
+  { value: 'thumb', key: 'size.thumb' },
+  { value: 'full', key: 'size.full' },
+  { value: '2560', key: 'size.2560' },
+  { value: '3840', key: 'size.3840' },
+  { value: 'raw', key: 'size.raw' },
 ];
 
 export default function ControlBar({
@@ -78,7 +79,7 @@ export default function ControlBar({
         </div>
       )}
 
-      <div className="control-bar__topics" role="group" aria-label="分类">
+      <div className="control-bar__topics" role="group" aria-label={t('control.categories')}>
         {TOPICS.map((topic) => (
           <button
             key={topic.query}
@@ -88,7 +89,7 @@ export default function ControlBar({
             onClick={() => onTopic(topic.query)}
           >
             {topic.icon && <Icon name={topic.icon} size={13} />}
-            {topic.label}
+            {t(topic.key)}
           </button>
         ))}
       </div>
@@ -100,12 +101,12 @@ export default function ControlBar({
             type="search"
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
-            placeholder="搜索"
-            aria-label="搜索壁纸关键词"
+            placeholder={t('control.search')}
+            aria-label={t('control.searchAria')}
           />
         </form>
 
-        <div className="control-bar__filters" role="group" aria-label="方向筛选">
+        <div className="control-bar__filters" role="group" aria-label={t('control.orientationAria')}>
           {ORIENTATIONS.map((item) => (
             <button
               key={item.value}
@@ -115,17 +116,17 @@ export default function ControlBar({
               onClick={() => onOrientation(item.value)}
             >
               <Icon name={item.icon} size={14} />
-              {item.label}
+              {t(item.key)}
             </button>
           ))}
-          <select className="select" value={size} onChange={(event) => onSize(event.target.value)} aria-label="下载尺寸">
-            {SIZES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+          <select className="select" value={size} onChange={(event) => onSize(event.target.value)} aria-label={t('control.sizeAria')}>
+            {SIZES.map((item) => <option key={item.value} value={item.value}>{t(item.key)}</option>)}
           </select>
         </div>
 
-        <button className="control-bar__action" type="button" onClick={onSetup} aria-label="Access Key 设置">
+        <button className="control-bar__action" type="button" onClick={onSetup} aria-label={t('control.keyAria')}>
           <Icon name="settings" size={15} />
-          设置
+          {t('control.settings')}
         </button>
 
         <span className={`control-bar__status${phase === 'error' ? ' is-error' : ''}`}>{status}</span>

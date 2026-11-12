@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import PhotoCard from './PhotoCard.jsx';
 import { IconAperture } from './Icons.jsx';
 import { useColumns } from '../hooks/useColumns.js';
+import { t } from '../i18n/index.js';
 
 function Empty({ phase, onSetup }) {
   const isError = phase === 'error';
@@ -9,16 +10,16 @@ function Empty({ phase, onSetup }) {
     <div className="empty">
       <div className="empty__mark"><IconAperture /></div>
       <h2 className="empty__title">
-        {isError ? 'Something went wrong' : phase === 'idle' ? 'The room is dark' : 'No frames found'}
+        {isError ? t('empty.error.title') : phase === 'idle' ? t('empty.idle.title') : t('empty.none.title')}
       </h2>
       <p className="empty__text">
         {isError
-          ? '先看上方的错误码，检查 Access Key 与配额后再试一次。'
+          ? t('empty.error.text')
           : phase === 'idle'
-            ? '填入 Unsplash Access Key，让光进来。页面不内置任何密钥，也不会回退到默认值。'
-            : '换个关键词或方向，再取一次片。'}
+            ? t('empty.idle.text')
+            : t('empty.none.text')}
       </p>
-      {phase === 'idle' && <button className="btn empty__action" type="button" onClick={onSetup}>设置 Access Key</button>}
+      {phase === 'idle' && <button className="btn empty__action" type="button" onClick={onSetup}>{t('empty.setupKey')}</button>}
     </div>
   );
 }
@@ -38,7 +39,7 @@ export default function PhotoGrid({ items, phase, size, onSave, savingId, saving
 
   if (phase === 'loading') {
     return (
-      <div className="grid" style={{ '--cols': columns }} aria-busy="true" aria-label="正在加载">
+      <div className="grid" style={{ '--cols': columns }} aria-busy="true" aria-label={t('grid.loadingAria')}>
         {Array.from({ length: columns }, (_, column) => (
           <div className="grid__col" key={column}>
             {Array.from({ length: 4 }, (_, row) => (

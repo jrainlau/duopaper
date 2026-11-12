@@ -7,13 +7,13 @@ enum APIError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .missingKey:
-            "尚未配置 Access Key。请在「设置」（⌘,）中填入。"
+            L("error.noKey")
         case .http(401, _):
-            "Access Key 无效或尚未生效。请确认填的是 Access Key（不是 Secret Key）。"
+            L("error.invalidKey")
         case .http(403, _), .http(429, _):
-            "请求配额已用尽（Demo 应用 50 次 / 小时），请等待重置或申请提高限额。"
+            L("error.quota")
         case let .http(code, detail):
-            "请求失败（HTTP \(code)）\(detail.isEmpty ? "" : "：\(detail)")"
+            L("error.http", ["code": String(code), "detail": detail.isEmpty ? "" : ": \(detail)"])
         }
     }
 }

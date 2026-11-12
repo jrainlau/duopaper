@@ -1,5 +1,6 @@
 import { extFromType, imageUrlFor, requestJson, toApiUrl } from './unsplash.js';
 import { canShareFiles, isIOS } from './device.js';
+import { t } from '../i18n/index.js';
 
 function triggerAnchorDownload(blob, filename) {
   const href = URL.createObjectURL(blob);
@@ -21,7 +22,7 @@ export async function savePhoto({ photo, size, key }) {
   }
 
   const res = await fetch(imageUrlFor(photo, size));
-  if (!res.ok) throw new Error(`图片请求 HTTP ${res.status}`);
+  if (!res.ok) throw new Error(t('app.imageHttp', { status: res.status }));
 
   const blob = await res.blob();
   // 缩略图档加 -thumb 后缀，避免和同一张图的原图文件重名

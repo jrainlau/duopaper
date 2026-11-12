@@ -61,22 +61,22 @@ struct ContentView: View {
         NavigationSplitView {
             List(selection: $sidebar) {
                 Section {
-                    Label("收藏", systemImage: "star")
+                    Label(L("tab.favorites"), systemImage: "star")
                         .tag(SidebarItem.favorites)
                 }
-                Section("分类") {
+                Section(L("discover.categories")) {
                     ForEach(Topic.pinned) { t in
                         Label(t.title, systemImage: t.symbol)
                         .tag(SidebarItem.topic(t.query))
                     }
                 }
                 if !history.items.isEmpty {
-                    Section("历史搜索") {
+                    Section(L("discover.history")) {
                         ForEach(history.items, id: \.self) { item in
                             Label(item, systemImage: "clock.arrow.circlepath")
                                 .tag(SidebarItem.history(item))
                                 .contextMenu {
-                                    Button("从历史中删除", systemImage: "trash") {
+                                    Button(L("history.remove"), systemImage: "trash") {
                                         if let i = history.items.firstIndex(of: item) { history.remove(at: IndexSet(integer: i)) }
                                     }
                                 }
@@ -91,7 +91,7 @@ struct ContentView: View {
                 .navigationTitle(title)
                 .navigationSubtitle(subtitle)
         }
-        .searchable(text: $searchText, placement: .toolbar, prompt: "搜索")
+        .searchable(text: $searchText, placement: .toolbar, prompt: L("discover.search"))
         .onSubmit(of: .search) {
             let q = searchText.trimmingCharacters(in: .whitespaces)
             query = q.isEmpty ? "wallpaper" : q
@@ -101,16 +101,16 @@ struct ContentView: View {
         }
         .toolbar {
             ToolbarItem {
-                Picker("方向", selection: $orientationRaw) {
+                Picker(L("discover.filter"), selection: $orientationRaw) {
                     ForEach(Orientation.allCases) { Text($0.title).tag($0.rawValue) }
                 }
                 .pickerStyle(.segmented)
                 .disabled(showingFavorites)
             }
             ToolbarItem {
-                Button("换一批", systemImage: "arrow.clockwise") { refreshToken += 1 }
+                Button(L("discover.shuffle"), systemImage: "arrow.clockwise") { refreshToken += 1 }
                     .keyboardShortcut("r")
-                    .help("换一批（随机取片）")
+                    .help(L("discover.shuffleHint"))
                     .disabled(showingFavorites)
             }
         }
@@ -137,11 +137,11 @@ struct ContentView: View {
     }
 
     private var title: String {
-        showingFavorites ? "收藏" : (Topic.all.first { $0.query == query }?.title ?? query)
+        showingFavorites ? L("tab.favorites") : (Topic.all.first { $0.query == query }?.title ?? query)
     }
 
     private var subtitle: String {
-        if showingFavorites { return favorites.photos.isEmpty ? "" : "\(favorites.photos.count) 张" }
+        if showingFavorites { return favorites.photos.isEmpty ? "" : L("favorites.count", ["n": "\(favorites.photos.count)"]) }
         return store.total > 0 ? "\(store.photos.count) / \(store.total)" : ""
     }
 
@@ -149,7 +149,7 @@ struct ContentView: View {
     private var detail: some View {
         if showingFavorites {
             if favorites.photos.isEmpty {
-                ContentUnavailableView("还没有收藏", systemImage: "star", description: Text("把鼠标移到图片上，点右上角的星即可收藏。"))
+                ContentUnavailableView(L("favorites.empty.title"), systemImage: "star", description: Text(L("favorites.empty.body.hover")))
             } else {
                 grid(favorites.photos, paginated: false)
             }
@@ -157,21 +157,21 @@ struct ContentView: View {
             switch store.phase {
             case .idle where accessKey.isEmpty:
                 ContentUnavailableView {
-                    Label("尚未配置 Access Key", systemImage: "key")
+                    Label(L("discover.noKey.title"), systemImage: "key")
                 } description: {
-                    Text("填入你的 Unsplash Access Key 后即可开始取片。")
+                    Text(L("discover.noKey.body"))
                 } actions: {
-                    Button { openSettings() } label: { Text("打开设置").foregroundStyle(Color.appOnPrimary) }.buttonStyle(.borderedProminent)
+                    Button { openSettings() } label: { Text(L("discover.openSettings")).foregroundStyle(Color.appOnPrimary) }.buttonStyle(.borderedProminent)
                 }
             case .idle, .loading:
-                ProgressView("正在取片…").frame(maxWidth: .infinity, maxHeight: .infinity)
+                ProgressView(L("discover.loading")).frame(maxWidth: .infinity, maxHeight: .infinity)
             case let .failed(message):
                 ContentUnavailableView {
-                    Label("无法加载", systemImage: "exclamationmark.triangle")
+                    Label(L("discover.loadFailed"), systemImage: "exclamationmark.triangle")
                 } description: {
                     Text(message)
                 } actions: {
-                    Button("重试") { refreshToken += 1 }
+                    Button(L("common.retry")) { refreshToken += 1 }
                 }
             case .ready where store.photos.isEmpty:
                 ContentUnavailableView.search(text: query)

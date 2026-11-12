@@ -31,7 +31,7 @@ struct DiscoverView: View {
                 .background(Color.appBackground)
                 .navigationTitle(Topic.all.first { $0.query == query }?.title ?? query)
                 .navigationBarTitleDisplayMode(.inline)
-                .searchable(text: $searchText, prompt: "搜索")
+                .searchable(text: $searchText, prompt: L("discover.search"))
                 .searchToolbarBehavior(.minimize)
                 .onSubmit(of: .search) {
                     let q = searchText.trimmingCharacters(in: .whitespaces)
@@ -42,15 +42,15 @@ struct DiscoverView: View {
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
                         Menu {
-                            Picker("分类", selection: topicBinding) {
+                            Picker(L("discover.categories"), selection: topicBinding) {
                                 ForEach(Topic.pinned) { topic in
                                     Label(topic.title, systemImage: topic.symbol).tag(topic.query)
                                 }
                             }
                             .pickerStyle(.inline)
                             if !history.items.isEmpty {
-                                Section("历史搜索") {
-                                    Picker("历史搜索", selection: topicBinding) {
+                                Section(L("discover.history")) {
+                                    Picker(L("discover.history"), selection: topicBinding) {
                                         ForEach(history.items, id: \.self) { item in
                                             Label(item, systemImage: "clock.arrow.circlepath").tag(item)
                                         }
@@ -59,20 +59,20 @@ struct DiscoverView: View {
                                 }
                             }
                         } label: {
-                            Label("分类", systemImage: "square.grid.2x2")
+                            Label(L("discover.categories"), systemImage: "square.grid.2x2")
                         }
                     }
                     ToolbarItem(placement: .primaryAction) {
                         Menu {
-                            Picker("方向", selection: $orientationRaw) {
+                            Picker(L("discover.filter"), selection: $orientationRaw) {
                                 ForEach(Orientation.allCases) { Text($0.title).tag($0.rawValue) }
                             }
                         } label: {
-                            Label("筛选", systemImage: "line.3.horizontal.decrease")
+                            Label(L("discover.filter"), systemImage: "line.3.horizontal.decrease")
                         }
                     }
                     ToolbarItem(placement: .primaryAction) {
-                        Button("刷新", systemImage: "arrow.clockwise") { refreshToken += 1 }
+                        Button(L("discover.refresh"), systemImage: "arrow.clockwise") { refreshToken += 1 }
                     }
                 }
         }
@@ -101,20 +101,20 @@ struct DiscoverView: View {
         switch store.phase {
         case .idle where accessKey.isEmpty:
             ContentUnavailableView {
-                Label("尚未配置 Access Key", systemImage: "key")
+                Label(L("discover.noKey.title"), systemImage: "key")
             } description: {
-                Text("到「设置」里填入你的 Unsplash Access Key 后即可开始取片。")
+                Text(L("discover.noKey.body"))
             }
         case .idle, .loading:
-            ProgressView("正在取片…").frame(maxWidth: .infinity, maxHeight: .infinity)
+            ProgressView(L("discover.loading")).frame(maxWidth: .infinity, maxHeight: .infinity)
         case let .failed(message):
             ContentUnavailableView {
-                Label("无法加载", systemImage: "exclamationmark.triangle")
+                Label(L("discover.loadFailed"), systemImage: "exclamationmark.triangle")
             } description: {
                 Text(message)
             } actions: {
                 Button { refreshToken += 1 } label: {
-                    Text("重试").foregroundStyle(Color.appOnPrimary)
+                    Text(L("common.retry")).foregroundStyle(Color.appOnPrimary)
                 }
                 .buttonStyle(.borderedProminent)
             }

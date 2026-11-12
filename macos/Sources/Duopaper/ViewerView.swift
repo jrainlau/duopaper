@@ -24,8 +24,8 @@ struct ViewerView: View {
             RoundedRectangle(cornerRadius: 18, style: .continuous).strokeBorder(.white.opacity(0.12))
         }
         .shadow(color: .black.opacity(0.45), radius: 40, y: 16)
-        .alert("下载失败", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
-            Button("好") {}
+        .alert(L("viewer.downloadFailed"), isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
+            Button(L("common.ok")) {}
         } message: {
             Text(errorMessage ?? "")
         }
@@ -49,8 +49,8 @@ struct ViewerView: View {
             }
             .buttonStyle(.plain)
             .padding(12)
-            .help("关闭")
-            .accessibilityLabel("关闭")
+            .help(L("common.close"))
+            .accessibilityLabel(L("common.close"))
         }
     }
 
@@ -65,10 +65,10 @@ struct ViewerView: View {
                     .foregroundStyle(isFavorite ? Color.yellow : Color.primary)
             }
             .controlSize(.large)
-            .help(isFavorite ? "取消收藏" : "收藏")
-            .accessibilityLabel(isFavorite ? "取消收藏" : "收藏")
+            .help(isFavorite ? L("favorites.remove") : L("favorites.add"))
+            .accessibilityLabel(isFavorite ? L("favorites.remove") : L("favorites.add"))
 
-            Picker("清晰度", selection: $sizeRaw) {
+            Picker(L("viewer.quality"), selection: $sizeRaw) {
                 ForEach(DownloadSize.allCases) { Text($0.title).tag($0.rawValue) }
             }
             .controlSize(.large)
@@ -80,7 +80,7 @@ struct ViewerView: View {
                 if downloading {
                     ProgressView().controlSize(.small)
                 } else {
-                    Label("下载", systemImage: "arrow.down.circle")
+                    Label(L("viewer.download"), systemImage: "arrow.down.circle")
                 }
             }
             .buttonStyle(.borderedProminent)

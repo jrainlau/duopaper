@@ -31,20 +31,20 @@ struct PhotoCard: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("取消收藏")
+                .accessibilityLabel(L("favorites.remove"))
                 }
             }
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .onTapGesture(perform: onOpen)
             .accessibilityElement(children: .contain)
-            .accessibilityLabel("\(photo.user.name) 的壁纸")
+            .accessibilityLabel(L("card.wallpaperBy", ["name": photo.user.name]))
             .accessibilityAddTraits(.isButton)
             .contextMenu {
-                Button("预览", systemImage: "eye", action: onOpen)
-                Button(isFavorite ? "取消收藏" : "收藏", systemImage: isFavorite ? "star.slash" : "star", action: onToggleFavorite)
+                Button(L("card.preview"), systemImage: "eye", action: onOpen)
+                Button(isFavorite ? L("favorites.remove") : L("favorites.add"), systemImage: isFavorite ? "star.slash" : "star", action: onToggleFavorite)
                 Link(destination: photo.pageURL) {
-                    Label("在 Unsplash 中打开", systemImage: "safari")
+                    Label(L("card.openInUnsplash"), systemImage: "safari")
                 }
             }
     }
