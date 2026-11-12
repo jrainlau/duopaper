@@ -19,6 +19,7 @@ struct ContentView: View {
     @State private var sidebar: SidebarItem?
     @State private var refreshToken = 0
     @State private var viewing: Photo?
+    @State private var showQuotaToast = false
 
     private var orientation: Orientation { Orientation(rawValue: orientationRaw) ?? .any }
     private var showingFavorites: Bool { sidebar == .favorites }
@@ -112,10 +113,16 @@ struct ContentView: View {
                     .keyboardShortcut("r")
                     .help(L("discover.shuffleHint"))
                     .disabled(showingFavorites)
+                    // 配额耗尽提示：系统 popover 锚定在刷新按钮上，点外部自动消失。
+                    .popover(isPresented: $showQuotaToast, arrowEdge: .leading) {
+                        quotaExhaustedToast
+                    }
             }
         }
         .task(id: LoadID(key: accessKey, query: query, orientation: orientationRaw, token: refreshToken)) {
             await store.reload(key: accessKey, query: query, orientation: orientation)
+            // 默认不展示任何配额信息；只有配额耗尽才弹一次气泡。
+            if QuotaTracker.shared.exhausted { showQuotaToast = true }
         }
         .onChange(of: sidebar) { _, new in
             switch new {
@@ -128,6 +135,16 @@ struct ContentView: View {
             sidebar = sidebarItem(for: query)
             if !Topic.pinned.contains(where: { $0.query == query }) { searchText = query }
         }
+    }
+
+    /// popover 内容：背景由系统提供，这里只放图标和文案。
+    private var quotaExhaustedToast: some View {
+        Label(L("quota.hourlyExhausted"), systemImage: "hourglass")
+            .font(.subheadline.weight(.medium))
+            .frame(maxWidth: 280, alignment: .leading)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
     }
 
     private func sidebarItem(for query: String) -> SidebarItem? {
