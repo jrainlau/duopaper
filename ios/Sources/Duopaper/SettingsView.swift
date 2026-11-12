@@ -454,6 +454,7 @@ private struct ProgressRing: View {
 /// 小组件关键词缓存里的图片，形态同「收藏」：可收藏、可下载，另外可以从缓存里删除。
 private struct WidgetCacheGalleryView: View {
     @Environment(FavoritesStore.self) private var favorites
+    @Environment(\.dismiss) private var dismiss
     @State private var store = WidgetCacheStore()
 
     var body: some View {
@@ -467,6 +468,13 @@ private struct WidgetCacheGalleryView: View {
         .background(Color.appBackground)
         .navigationTitle(L("widget.gallery"))
         .navigationBarTitleDisplayMode(.inline)
+        // 宽屏下详情栏左上角被侧边栏按钮占着，系统返回键不一定出现，所以显式放一个。
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button(L("settings.section.widget"), systemImage: "chevron.backward") { dismiss() }
+            }
+        }
     }
 
     private func delete(_ photo: Photo) {
