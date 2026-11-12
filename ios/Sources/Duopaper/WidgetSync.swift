@@ -1,7 +1,7 @@
 import Foundation
 import WidgetKit
 
-/// 把收藏同步成小组件专用的小缩略图 + 清单，放在 App Group 共享目录里。
+/// 把小组件当前来源（收藏，或关键词缓存的那一批图）同步成小组件专用的小缩略图 + 清单，放在 App Group 共享目录里。
 ///
 /// 兜底思路：
 /// - 缩略图是「小组件专用副本」，不放在 Caches / Nuke 缓存里，所以清空缓存不会影响小组件；
@@ -27,6 +27,17 @@ actor WidgetSync {
             favorites: items.count,
             thumbs: items.filter { WidgetShared.thumbURL(for: $0.id) != nil }.count
         )
+    }
+
+    /// 当前来源对应的图片：来源是关键词且缓存可用时用缓存，否则用收藏。
+    nonisolated static func photos(favorites: [Photo]) -> [Photo] {
+        WidgetSource.active()?.photos ?? favorites
+    }
+
+    /// 按当前来源对账。收藏变化时，来源是关键词就不动小组件（避免无谓重排时间线）。
+    func sync(favorites: [Photo], favoritesChanged: Bool = false) async {
+        if favoritesChanged && !WidgetShared.sourceKeyword.isEmpty { return }
+        await sync(Self.photos(favorites: favorites))
     }
 
     func sync(_ photos: [Photo]) async {

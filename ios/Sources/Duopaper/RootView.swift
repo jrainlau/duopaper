@@ -27,9 +27,12 @@ struct RootView: View {
                     }
             }
         }
-        // 外部 URL scheme 入口：duopaper://favorites 回到收藏页（小组件点击已改为换图）。
+        // 外部 URL scheme 入口：
+        // duopaper://favorites 回到收藏页；duopaper://photo/<id> 是小组件「打开 App」模式，用 Viewer 弹出这张图。
         .onOpenURL { url in
-            guard url.scheme == "duopaper", url.host == "favorites" else { return }
+            guard url.scheme == "duopaper" else { return }
+            if url.host == "photo" { openWidgetPhoto(id: url.lastPathComponent); return }
+            guard url.host == "favorites" else { return }
             viewer.close()
             // 等场景激活的转场结束后再切换，并且不带动画，避免在转场中途改选中项。
             Task { @MainActor in
@@ -40,11 +43,26 @@ struct RootView: View {
             }
         }
         .task {
-            favorites.onChange = { photos in Task { await WidgetSync.shared.sync(photos) } }
-            await WidgetSync.shared.sync(favorites.photos)
+            favorites.onChange = { photos in Task { await WidgetSync.shared.sync(favorites: photos, favoritesChanged: true) } }
+            await WidgetSync.shared.sync(favorites: favorites.photos)
         }
         .onChange(of: scenePhase) {
-            if scenePhase == .active { Task { await WidgetSync.shared.sync(favorites.photos) } }
+            if scenePhase == .active { Task { await WidgetSync.shared.sync(favorites: favorites.photos) } }
+        }
+    }
+
+    /// 小组件里的图可能来自收藏，也可能来自关键词缓存，两边都找一下。
+    private func openWidgetPhoto(id: String) {
+        guard let photo = favorites.photos.first(where: { $0.id == id }) ?? WidgetSource.photo(id: id) else { return }
+        Task { @MainActor in
+            // 已经开着别的预览时，先收起再开新的；冷启动时等场景激活转场结束。
+            if viewer.photo != nil {
+                viewer.close()
+                try? await Task.sleep(for: .milliseconds(250))
+            } else {
+                try? await Task.sleep(for: .milliseconds(60))
+            }
+            viewer.open(photo)
         }
     }
 

@@ -19,23 +19,29 @@ private enum WidgetL10n {
 
     private static let enTable = [
         "widget.emptyPrompt": "Favorite some photos and they’ll rotate here",
-        "widget.configName": "Favorites Carousel",
-        "widget.configDesc": "Rotate through your favorite photos; tap to show another one.",
+        "widget.emptyKeyword": "Open Duopaper and set a keyword in Settings → Widget",
+        "widget.configName": "Photo Carousel",
+        "widget.configDesc": "Rotate through your favorites or photos for a keyword; tap to show another one or open it in the app.",
         "widget.nextPhoto": "Next photo",
+        "widget.openPhoto": "Open photo",
     ]
 
     private static let hansTable = [
         "widget.emptyPrompt": "收藏几张图片，这里会轮播",
-        "widget.configName": "收藏轮播",
-        "widget.configDesc": "轮播你收藏的图片，点一下随机换一张。",
+        "widget.emptyKeyword": "打开 Duopaper，在「设置 → 小组件」里填写关键词",
+        "widget.configName": "图片轮播",
+        "widget.configDesc": "轮播收藏或指定关键词的图片；点一下可以换一张，也可以进入 App 查看。",
         "widget.nextPhoto": "换一张",
+        "widget.openPhoto": "查看图片",
     ]
 
     private static let hantTable = [
         "widget.emptyPrompt": "收藏幾張圖片，這裡會輪播",
-        "widget.configName": "收藏輪播",
-        "widget.configDesc": "輪播你收藏的圖片，點一下隨機換一張。",
+        "widget.emptyKeyword": "打開 Duopaper，在「設定 → 小工具」裡填寫關鍵字",
+        "widget.configName": "圖片輪播",
+        "widget.configDesc": "輪播收藏或指定關鍵字的圖片；點一下可以換一張，也可以進入 App 查看。",
         "widget.nextPhoto": "換一張",
+        "widget.openPhoto": "查看圖片",
     ]
 }
 
@@ -44,6 +50,9 @@ struct FavoriteEntry: TimelineEntry {
     /// nil 表示占位（系统要求先给个占位）或没有收藏。
     let item: WidgetShared.Item?
     let hasFavorites: Bool
+    /// 来源关键词；空 = 收藏。只影响「没有图片」时的提示文案。
+    var sourceKeyword: String = ""
+    var tapAction: WidgetShared.TapAction = .shuffle
     /// 已经按小组件尺寸缩小并居中裁好的图。真机上小组件渲染有严格的内存限制，
     /// 不能在视图里解码整张大图，更不能为上百个条目各解码一遍。
     var image: UIImage? = nil
@@ -87,16 +96,18 @@ struct FavoritesProvider: TimelineProvider {
         let item = pool.randomElement()
         let pixel = CGSize(width: context.displaySize.width * 2.5, height: context.displaySize.height * 2.5)
         let image = item.flatMap { WidgetShared.thumbURL(for: $0.id) }.flatMap { WidgetImage.load($0, cover: pixel) }
-        completion(FavoriteEntry(date: .now, item: item, hasFavorites: !pool.isEmpty, image: image))
+        completion(FavoriteEntry(date: .now, item: item, hasFavorites: !pool.isEmpty, sourceKeyword: WidgetShared.sourceKeyword, tapAction: WidgetShared.tapAction, image: image))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<FavoriteEntry>) -> Void) {
         let pool = WidgetShared.carouselPool()
         let now = Date()
+        let keyword = WidgetShared.sourceKeyword
+        let tapAction = WidgetShared.tapAction
 
-        // 兜底：没有任何收藏（或 App Group 不可用）→ 显示提示，15 分钟后再看一眼。
+        // 兜底：没有任何图片（或 App Group 不可用）→ 显示提示，15 分钟后再看一眼。
         guard !pool.isEmpty else {
-            let entry = FavoriteEntry(date: now, item: nil, hasFavorites: false)
+            let entry = FavoriteEntry(date: now, item: nil, hasFavorites: false, sourceKeyword: keyword, tapAction: tapAction)
             completion(Timeline(entries: [entry], policy: .after(now.addingTimeInterval(900))))
             return
         }
@@ -127,7 +138,7 @@ struct FavoritesProvider: TimelineProvider {
             return img
         }
         let entries = sequence.prefix(count).enumerated().map { i, item in
-            FavoriteEntry(date: now.addingTimeInterval(Double(i) * interval), item: item, hasFavorites: true, image: image(for: item))
+            FavoriteEntry(date: now.addingTimeInterval(Double(i) * interval), item: item, hasFavorites: true, sourceKeyword: keyword, tapAction: tapAction, image: image(for: item))
         }
         completion(Timeline(entries: entries, policy: .atEnd))
     }
@@ -138,7 +149,7 @@ struct FavoritesWidgetView: View {
 
     var body: some View {
         ZStack {
-            if entry.hasFavorites {
+            if entry.hasFavorites && entry.tapAction == .shuffle {
                 Button(intent: NextPhotoIntent()) {
                     content
                 }
@@ -151,16 +162,19 @@ struct FavoritesWidgetView: View {
         // 图片放在内容层而不是容器背景里：iOS 26 的「清透 / 玻璃」主屏样式会把容器背景
         // 整个替换成玻璃，放在背景里的图片会被抹掉，只剩一个空框。
         .containerBackground(for: .widget) { backdrop }
+        // 「打开 App」模式：整块小组件是链接，由 App 用 Viewer 弹出这张图。
+        .widgetURL(entry.tapAction == .openViewer ? entry.item.map { WidgetShared.photoURL($0.id) } : nil)
     }
 
     @ViewBuilder
     private var content: some View {
         if !entry.hasFavorites {
+            let fromKeyword = !entry.sourceKeyword.isEmpty
             VStack(spacing: 6) {
-                Image(systemName: "star.fill")
+                Image(systemName: fromKeyword ? "photo.on.rectangle" : "star.fill")
                     .font(.title2)
-                    .foregroundStyle(.yellow)
-                Text(WidgetL10n.t("widget.emptyPrompt"))
+                    .foregroundStyle(fromKeyword ? Color.secondary : Color.yellow)
+                Text(WidgetL10n.t(fromKeyword ? "widget.emptyKeyword" : "widget.emptyPrompt"))
                     .font(.footnote.weight(.medium))
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
@@ -185,7 +199,7 @@ struct FavoritesWidgetView: View {
             .transition(.opacity)
             .contentTransition(.opacity)
             .animation(.easeInOut(duration: 0.8), value: item.id)
-            // 署名：整块是换图按钮，所以这里只放文字，不放可点的链接。
+            // 署名：整块是换图按钮 / 链接，所以这里只放文字，不放可点的链接。
             .overlay(alignment: .bottomLeading) {
                 Text("\(item.user) / Unsplash")
                     .font(.system(size: 10, weight: .medium))

@@ -210,10 +210,26 @@ private struct DownloadSettingsView: View {
 // MARK: - 小组件
 
 private struct WidgetSettingsView: View {
+    private enum SourceMode: Hashable { case favorites, keyword }
+
     @Environment(FavoritesStore.self) private var favorites
+    @Environment(SearchHistoryStore.self) private var history
+    @AppStorage("accessKey") private var accessKey = ""
+    @State private var mode: SourceMode
+    @State private var draft: String
+    @State private var cache = WidgetSource.load()
+    @State private var fetching = false
+    @State private var errorMessage: String?
     @State private var interval = WidgetShared.interval
+    @State private var tapAction = WidgetShared.tapAction
     @State private var status = WidgetSync.status()
     @State private var syncing = false
+
+    init() {
+        let active = WidgetShared.sourceKeyword
+        _mode = State(initialValue: active.isEmpty ? .favorites : .keyword)
+        _draft = State(initialValue: active.isEmpty ? (WidgetSource.load()?.keyword ?? "") : active)
+    }
 
     // WidgetKit 有最小刷新间隔和每日刷新预算，分钟级档位在真机上不生效。
     // 最短档取 15 分钟：12 个条目能覆盖 3 小时，期间无需依赖会被节流的后台刷新。
@@ -224,56 +240,184 @@ private struct WidgetSettingsView: View {
         (L("widget.intervalHours", ["n": "2"]), 7200),
     ]
 
+    private var trimmedDraft: String { draft.trimmingCharacters(in: .whitespacesAndNewlines) }
+
     var body: some View {
         Form {
-            Section {
-                Picker(L("widget.interval"), selection: $interval) {
-                    ForEach(options, id: \.seconds) { Text($0.title).tag($0.seconds) }
-                }
-                .pickerStyle(.inline)
-                .labelsHidden()
-                .onChange(of: interval) {
-                    WidgetShared.interval = interval
-                    WidgetCenter.shared.reloadTimelines(ofKind: WidgetShared.kind)
-                }
-            } header: {
-                Text(L("widget.carouselInterval"))
-            } footer: {
-                Text(L("widget.intervalFooter"))
-            }
-            .appRows()
-
-            Section {
-                LabeledContent(L("widget.dataChannel")) {
-                    Label(status.groupAvailable ? L("widget.statusOk") : L("widget.statusUnavailable"), systemImage: status.groupAvailable ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-                        .foregroundStyle(status.groupAvailable ? Color.appSuccess : Color.appWarning)
-                }
-                LabeledContent(L("widget.thumbs"), value: L("widget.thumbsValue", ["shown": "\(status.thumbs)", "total": "\(favorites.photos.count)"]))
-                Button {
-                    syncing = true
-                    Task {
-                        await WidgetSync.shared.sync(favorites.photos)
-                        status = WidgetSync.status()
-                        syncing = false
-                    }
-                } label: {
-                    HStack {
-                        Text(L("widget.syncNow"))
-                        if syncing { Spacer(); ProgressView() }
-                    }
-                }
-                .disabled(syncing)
-            } header: {
-                Text(L("widget.status"))
-            } footer: {
-                Text(status.groupAvailable
-                    ? L("widget.statusFooterOk")
-                    : L("widget.statusFooterBad"))
-            }
-            .appRows()
+            sourceSection
+            intervalSection
+            tapSection
+            statusSection
         }
         .appPage()
-        .onAppear { status = WidgetSync.status() }
+        .onAppear {
+            status = WidgetSync.status()
+            cache = WidgetSource.load()
+        }
+        .onChange(of: mode) { applyMode() }
+        .alert(L("widget.source.failed"), isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
+            Button(L("common.ok")) {}
+        } message: {
+            Text(errorMessage ?? "")
+        }
+    }
+
+    // MARK: 来源
+
+    private var sourceSection: some View {
+        Section {
+            Picker(L("widget.source"), selection: $mode) {
+                Text(L("widget.source.favorites")).tag(SourceMode.favorites)
+                Text(L("widget.source.keyword")).tag(SourceMode.keyword)
+            }
+
+            if mode == .keyword {
+                HStack(spacing: 12) {
+                    TextField(L("widget.source.placeholder"), text: $draft)
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.never)
+                        .submitLabel(.search)
+                        .onSubmit { load(fresh: false) }
+                    if fetching {
+                        ProgressView()
+                    } else {
+                        // Form 行内的按钮要用 borderless，否则整行都会变成这个按钮的点击区域。
+                        Button { load(fresh: true) } label: {
+                            Image(systemName: "arrow.clockwise")
+                        }
+                        .buttonStyle(.borderless)
+                        .disabled(trimmedDraft.isEmpty)
+                        .accessibilityLabel(L("widget.source.refresh"))
+                    }
+                }
+            }
+        } header: {
+            Text(L("widget.source"))
+        } footer: {
+            if mode == .keyword {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(L("widget.source.footer", ["n": "\(WidgetSource.photosPerFetch)"]))
+                    if let cache, cache.keyword.caseInsensitiveCompare(WidgetShared.sourceKeyword) == .orderedSame {
+                        Text(L("widget.source.cached", ["n": "\(cache.photos.count)", "keyword": cache.keyword]))
+                    }
+                }
+            }
+        }
+        .appRows()
+    }
+
+    /// 切换来源：收藏 / 关键词。切到关键词时若本机已有缓存就直接启用，不请求接口。
+    private func applyMode() {
+        switch mode {
+        case .favorites:
+            WidgetShared.sourceKeyword = ""
+        case .keyword:
+            guard let cache, !cache.photos.isEmpty else { return }
+            draft = cache.keyword
+            WidgetShared.sourceKeyword = cache.keyword
+        }
+        Task {
+            await WidgetSync.shared.sync(favorites: favorites.photos)
+            status = WidgetSync.status()
+        }
+    }
+
+    /// fresh = false：提交关键词，本机有同词缓存就不再请求；fresh = true：刷新，拉不同的一批并替换缓存。
+    private func load(fresh: Bool) {
+        let keyword = trimmedDraft
+        guard !keyword.isEmpty, !fetching else { return }
+        fetching = true
+        Task {
+            defer { fetching = false }
+            do {
+                let result = try await WidgetSource.pull(keyword: keyword, key: accessKey, fresh: fresh)
+                cache = result
+                draft = result.keyword
+                WidgetShared.sourceKeyword = result.keyword
+                // 和主页搜索一致：置顶分类不进历史，其余记入「搜索历史」。
+                if !Topic.pinned.contains(where: { $0.query == result.keyword.lowercased() }) { history.add(result.keyword) }
+                await WidgetSync.shared.sync(favorites: favorites.photos)
+                status = WidgetSync.status()
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        }
+    }
+
+    // MARK: 轮播间隔
+
+    private var intervalSection: some View {
+        Section {
+            Picker(L("widget.interval"), selection: $interval) {
+                ForEach(options, id: \.seconds) { Text($0.title).tag($0.seconds) }
+            }
+            .pickerStyle(.inline)
+            .labelsHidden()
+            .onChange(of: interval) {
+                WidgetShared.interval = interval
+                WidgetCenter.shared.reloadTimelines(ofKind: WidgetShared.kind)
+            }
+        } header: {
+            Text(L("widget.carouselInterval"))
+        } footer: {
+            Text(L("widget.intervalFooter"))
+        }
+        .appRows()
+    }
+
+    // MARK: 点击行为
+
+    private var tapSection: some View {
+        Section {
+            Picker(L("widget.tap"), selection: $tapAction) {
+                Text(L("widget.tap.shuffle")).tag(WidgetShared.TapAction.shuffle)
+                Text(L("widget.tap.open")).tag(WidgetShared.TapAction.openViewer)
+            }
+            .pickerStyle(.inline)
+            .labelsHidden()
+            .onChange(of: tapAction) {
+                WidgetShared.tapAction = tapAction
+                WidgetCenter.shared.reloadTimelines(ofKind: WidgetShared.kind)
+            }
+        } header: {
+            Text(L("widget.tap"))
+        } footer: {
+            Text(L("widget.tap.footer"))
+        }
+        .appRows()
+    }
+
+    // MARK: 状态
+
+    private var statusSection: some View {
+        Section {
+            LabeledContent(L("widget.dataChannel")) {
+                Label(status.groupAvailable ? L("widget.statusOk") : L("widget.statusUnavailable"), systemImage: status.groupAvailable ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                    .foregroundStyle(status.groupAvailable ? Color.appSuccess : Color.appWarning)
+            }
+            LabeledContent(L("widget.thumbs"), value: L("widget.thumbsValue", ["shown": "\(status.thumbs)", "total": "\(status.favorites)"]))
+            Button {
+                syncing = true
+                Task {
+                    await WidgetSync.shared.sync(favorites: favorites.photos)
+                    status = WidgetSync.status()
+                    syncing = false
+                }
+            } label: {
+                HStack {
+                    Text(L("widget.syncNow"))
+                    if syncing { Spacer(); ProgressView() }
+                }
+            }
+            .disabled(syncing)
+        } header: {
+            Text(L("widget.status"))
+        } footer: {
+            Text(status.groupAvailable
+                ? L("widget.statusFooterOk")
+                : L("widget.statusFooterBad"))
+        }
+        .appRows()
     }
 }
 
