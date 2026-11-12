@@ -21,9 +21,29 @@
 2. 复制 **Access Key**（不是 Secret Key）
 3. 粘贴到页面设置中，仅保存在浏览器本地（localStorage）
 
-## 开发
+## 目录结构
+
+```
+web/    H5 版（React + Vite），部署到 GitHub Pages
+ios/    iOS 原生版（待实现）
+macos/  macOS 原生版（SwiftUI，遵循 Apple HIG）
+```
+
+## macOS 版
+
+需要 Xcode。无需开发者账号，使用 ad-hoc 签名，仅供本机使用：
 
 ```bash
+bash macos/scripts/build-app.sh            # 生成 macos/build/Duopaper.app
+bash macos/scripts/build-app.sh --install  # 同时安装到 /Applications
+```
+
+首次打开如被 Gatekeeper 拦截，右键 App 选「打开」。Access Key 在 App 的「设置」（⌘,）中填写。
+
+## Web 开发（在 web/ 目录下）
+
+```bash
+cd web
 npm install
 npm run dev       # 本地开发，base 为 /
 npm run build     # 构建，base 为 /duopaper/
@@ -34,7 +54,7 @@ npm run preview   # 预览构建产物
 
 ## 部署
 
-部署到 GitHub Pages，由 `.github/workflows/static.yml` 在推送 `main` 时触发：CI 执行 `npm ci && npm run build`，上传 `dist` 并发布。
+部署到 GitHub Pages，由 `.github/workflows/static.yml` 在推送 `main` 时触发：CI 在 `web/` 下执行 `npm ci && npm run build`，上传 `web/dist` 并发布。
 
 ```bash
 npm run deploy -- "提交说明"
@@ -45,12 +65,12 @@ npm run deploy -- "提交说明"
 ## 目录
 
 ```
-src/components   界面组件
-src/hooks        Access Key、列表数据、列数
-src/lib          Unsplash 请求、缓存、下载、设备判断
-src/styles       设计 token 与样式
-public           图标与 manifest
-scripts          部署脚本
+web/src/components   界面组件
+web/src/hooks        Access Key、列表数据、列数
+web/src/lib          Unsplash 请求、缓存、下载、设备判断
+web/src/styles       设计 token 与样式
+web/public           图标与 manifest
+web/scripts          部署脚本
 ```
 
 ## 致谢

@@ -3,12 +3,15 @@
 # 流程：本地构建校验 -> 提交 -> 推送 main -> 触发 GitHub Actions 部署 Pages
 set -euo pipefail
 cd "$(dirname "$0")/.."
+WEB_DIR="$PWD"
+cd ..
+ROOT_DIR="$PWD"
 
 REPO="jrainlau/duopaper"
 MSG="${1:-deploy: $(date '+%Y-%m-%d %H:%M:%S')}"
 
 echo "==> 本地构建校验"
-npm run build
+(cd "$WEB_DIR" && npm run build)
 
 # 从 ~/.zshrc 读取 GITHUB_TOKEN，仅通过一次性 header 注入，不写入 git 配置
 if [ -z "${GITHUB_TOKEN:-}" ]; then
