@@ -257,6 +257,7 @@
 				CODE_SIGN_ENTITLEMENTS = Duopaper.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = D7K5854TYB;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Duopaper;
@@ -284,6 +285,7 @@
 				CODE_SIGN_ENTITLEMENTS = Duopaper.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = D7K5854TYB;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Duopaper;
@@ -309,6 +311,7 @@
 				CODE_SIGN_ENTITLEMENTS = DuopaperWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = D7K5854TYB;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WidgetInfo.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Duopaper 小组件";
@@ -333,6 +336,7 @@
 				CODE_SIGN_ENTITLEMENTS = DuopaperWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = D7K5854TYB;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WidgetInfo.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Duopaper 小组件";

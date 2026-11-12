@@ -76,9 +76,9 @@ struct UnsplashClient {
         replacing(photo.urls.regular, ["w": "640", "q": "75", "fm": "jpg"])
     }
 
-    /// 小组件专用缩略图：800px / q70，一张约几十 KB。
+    /// 小组件专用缩略图：1080px / q70，一张约 100KB 以内；显示时会再缩小裁切到小组件尺寸。
     static func widgetThumbURL(_ photo: Photo) -> URL {
-        replacing(photo.urls.regular, ["w": "800", "q": "70", "fm": "jpg"])
+        replacing(photo.urls.regular, ["w": "1080", "q": "70", "fm": "jpg"])
     }
 
     /// Viewer 中的预览图。

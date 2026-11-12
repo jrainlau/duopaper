@@ -1,3 +1,4 @@
+import ImageIO
 import SwiftUI
 import WidgetKit
 
@@ -6,6 +7,36 @@ struct FavoriteEntry: TimelineEntry {
     /// nil 表示占位（系统要求先给个占位）或没有收藏。
     let item: WidgetShared.Item?
     let hasFavorites: Bool
+    /// 已经按小组件尺寸缩小并居中裁好的图。真机上小组件渲染有严格的内存限制，
+    /// 不能在视图里解码整张大图，更不能为上百个条目各解码一遍。
+    var image: UIImage? = nil
+}
+
+enum WidgetImage {
+    /// 缩放到刚好覆盖目标像素尺寸（不放大），再居中裁成目标比例。
+    static func load(_ url: URL, cover target: CGSize) -> UIImage? {
+        let options: [CFString: Any] = [kCGImageSourceShouldCache: false]
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, options as CFDictionary),
+              let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
+              let w = props[kCGImagePropertyPixelWidth] as? CGFloat,
+              let h = props[kCGImagePropertyPixelHeight] as? CGFloat, w > 0, h > 0 else { return nil }
+
+        let scale = min(1, max(target.width / w, target.height / h))
+        let thumbOptions: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceShouldCacheImmediately: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: Int((max(w, h) * scale).rounded(.up)),
+        ]
+        guard let full = CGImageSourceCreateThumbnailAtIndex(source, 0, thumbOptions as CFDictionary) else { return nil }
+
+        let cw = CGFloat(full.width), ch = CGFloat(full.height)
+        let aspect = target.width / target.height
+        let cropSize = cw / ch > aspect ? CGSize(width: ch * aspect, height: ch) : CGSize(width: cw, height: cw / aspect)
+        let rect = CGRect(x: (cw - cropSize.width) / 2, y: (ch - cropSize.height) / 2, width: cropSize.width, height: cropSize.height).integral
+        guard let cropped = full.cropping(to: rect) else { return UIImage(cgImage: full) }
+        return UIImage(cgImage: cropped)
+    }
 }
 
 struct FavoritesProvider: TimelineProvider {
@@ -15,7 +46,10 @@ struct FavoritesProvider: TimelineProvider {
 
     func getSnapshot(in context: Context, completion: @escaping (FavoriteEntry) -> Void) {
         let pool = Self.pool()
-        completion(FavoriteEntry(date: .now, item: pool.randomElement(), hasFavorites: !pool.isEmpty))
+        let item = pool.randomElement()
+        let pixel = CGSize(width: context.displaySize.width * 2.5, height: context.displaySize.height * 2.5)
+        let image = item.flatMap { WidgetShared.thumbURL(for: $0.id) }.flatMap { WidgetImage.load($0, cover: pixel) }
+        completion(FavoriteEntry(date: .now, item: item, hasFavorites: !pool.isEmpty, image: image))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<FavoriteEntry>) -> Void) {
@@ -30,8 +64,11 @@ struct FavoritesProvider: TimelineProvider {
         }
 
         let interval = WidgetShared.interval
-        // 一次生成一批未来条目：系统按时间自动切换，不消耗刷新额度；批次用完后再重新生成。
-        let count = min(max(Int(6 * 3600 / interval), 12), 120)
+        // 一次生成一小批未来条目：系统按时间自动切换，批次用完后再重新生成。
+        // 条目数要少：每个条目的渲染结果都会被预先存档，上百个条目会在真机上撑爆内存，小组件只剩空框。
+        let count = 12
+        let displaySize = context.displaySize
+        let pixel = CGSize(width: displaySize.width * 2.5, height: displaySize.height * 2.5)
 
         // 每个小组件实例各自洗牌、各自随机起点，所以多个小组件之间不同步。
         var sequence: [WidgetShared.Item] = []
@@ -43,8 +80,15 @@ struct FavoritesProvider: TimelineProvider {
             last = round.last?.id
         }
 
+        var decoded: [String: UIImage] = [:]
+        func image(for item: WidgetShared.Item) -> UIImage? {
+            if let cached = decoded[item.id] { return cached }
+            guard let url = WidgetShared.thumbURL(for: item.id), let img = WidgetImage.load(url, cover: pixel) else { return nil }
+            decoded[item.id] = img
+            return img
+        }
         let entries = (0..<count).map { i in
-            FavoriteEntry(date: now.addingTimeInterval(Double(i) * interval), item: sequence[i], hasFavorites: true)
+            FavoriteEntry(date: now.addingTimeInterval(Double(i) * interval), item: sequence[i], hasFavorites: true, image: image(for: sequence[i]))
         }
         let end = now.addingTimeInterval(Double(count) * interval)
         completion(Timeline(entries: entries, policy: .after(end)))
@@ -90,7 +134,7 @@ struct FavoritesWidgetView: View {
         if let item = entry.item {
             ZStack {
                 tint(item)
-                if let url = WidgetShared.thumbURL(for: item.id), let image = UIImage(contentsOfFile: url.path) {
+                if let image = entry.image {
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFill()

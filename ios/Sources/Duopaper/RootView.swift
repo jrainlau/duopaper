@@ -31,7 +31,13 @@ struct RootView: View {
         .onOpenURL { url in
             guard url.scheme == "duopaper", url.host == "favorites" else { return }
             viewer.close()
-            tab = .favorites
+            // 等场景激活的转场结束后再切换，并且不带动画，避免在转场中途改选中项。
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(60))
+                var transaction = Transaction(animation: nil)
+                transaction.disablesAnimations = true
+                withTransaction(transaction) { tab = .favorites }
+            }
         }
         .task {
             favorites.onChange = { photos in Task { await WidgetSync.shared.sync(photos) } }
