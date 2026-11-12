@@ -4,6 +4,7 @@ import SwiftUI
 @main
 struct DuopaperApp: App {
     @State private var favorites = FavoritesStore()
+    @State private var viewer = ViewerState()
 
     init() {
         ImagePipeline.shared = ImagePipeline(configuration: .withDataCache(name: "com.jrainlau.duopaper.images", sizeLimit: 512 << 20))
@@ -13,6 +14,7 @@ struct DuopaperApp: App {
         WindowGroup {
             RootView()
                 .environment(favorites)
+                .environment(viewer)
         }
     }
 }

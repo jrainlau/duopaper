@@ -8,8 +8,23 @@ private enum AppTab: Hashable {
 /// iPhone Duo 上 Tab 栏会按系统规则放到侧边的竖条里，和工具栏在一起。
 struct RootView: View {
     @State private var tab: AppTab = .discover
+    @Environment(ViewerState.self) private var viewer
 
     var body: some View {
+        ZStack {
+            tabs
+                .allowsHitTesting(viewer.photo == nil)
+                .disabled(viewer.photo != nil)
+
+            if let photo = viewer.photo {
+                ViewerOverlay(photo: photo) { viewer.photo = nil }
+                    .transition(.opacity.combined(with: .scale(scale: 0.97)))
+            }
+        }
+        .animation(.spring(duration: 0.35), value: viewer.photo?.id)
+    }
+
+    private var tabs: some View {
         TabView(selection: $tab) {
             Tab("发现", systemImage: "photo.on.rectangle.angled", value: AppTab.discover) {
                 DiscoverView()

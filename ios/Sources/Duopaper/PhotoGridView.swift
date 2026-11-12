@@ -1,13 +1,13 @@
 import SwiftUI
 
-/// 瀑布流 + 预览 sheet，发现页和收藏页共用。
+/// 瀑布流，发现页和收藏页共用；点图片在根视图弹出预览浮层。
 struct PhotoGridView: View {
     let photos: [Photo]
     var footer: AnyView? = nil
     var onNearEnd: (() -> Void)? = nil
 
     @Environment(FavoritesStore.self) private var favorites
-    @State private var viewing: Photo?
+    @Environment(ViewerState.self) private var viewer
 
     var body: some View {
         let tail = Set(photos.suffix(6).map(\.id))
@@ -22,13 +22,10 @@ struct PhotoGridView: View {
             PhotoCard(
                 photo: photo,
                 isFavorite: favorites.contains(photo),
-                onOpen: { viewing = photo },
+                onOpen: { viewer.photo = photo },
                 onToggleFavorite: { favorites.toggle(photo) }
             )
             .onAppear { if tail.contains(photo.id) { onNearEnd?() } }
-        }
-        .sheet(item: $viewing) { photo in
-            ViewerView(photo: photo)
         }
     }
 }
