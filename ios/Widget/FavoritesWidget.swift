@@ -108,7 +108,9 @@ struct FavoritesWidgetView: View {
     var body: some View {
         content
             .widgetURL(WidgetShared.deepLink)
-            .containerBackground(for: .widget) { background }
+            // 图片放在内容层而不是容器背景里：iOS 26 的「清透 / 玻璃」主屏样式会把容器背景
+            // 整个替换成玻璃，放在背景里的图片会被抹掉，只剩一个空框。
+            .containerBackground(for: .widget) { backdrop }
     }
 
     @ViewBuilder
@@ -124,29 +126,32 @@ struct FavoritesWidgetView: View {
                     .foregroundStyle(.secondary)
             }
             .padding(8)
+        } else if let item = entry.item {
+            ZStack {
+                tint(item)
+                if let image = entry.image {
+                    Image(uiImage: image)
+                        .resizable()
+                        // 着色 / 清透样式下系统会把内容染成单色，要求保留原图颜色。
+                        .widgetAccentedRenderingMode(.fullColor)
+                        .scaledToFill()
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .clipped()
+            .ignoresSafeArea()
+            .id(item.id)
+            .transition(.opacity)
+            .contentTransition(.opacity)
+            .animation(.easeInOut(duration: 0.8), value: item.id)
         } else {
             Color.clear
         }
     }
 
     @ViewBuilder
-    private var background: some View {
-        if let item = entry.item {
-            ZStack {
-                tint(item)
-                if let image = entry.image {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFill()
-                }
-            }
-            .id(item.id)
-            .transition(.opacity)
-            .contentTransition(.opacity)
-            .animation(.easeInOut(duration: 0.8), value: item.id)
-        } else {
-            Color(.secondarySystemBackground)
-        }
+    private var backdrop: some View {
+        if let item = entry.item { tint(item) } else { Color(.secondarySystemBackground) }
     }
 
     private func tint(_ item: WidgetShared.Item) -> Color {
