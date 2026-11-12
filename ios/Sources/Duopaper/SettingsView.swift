@@ -20,9 +20,11 @@ struct SettingsView: View {
                     Image(systemName: section.symbol).foregroundStyle(section.tint)
                 }
                 .tag(section)
-                .appRows()
+                .listRowBackground(Color.clear)
             }
-            .appPage()
+            // 侧边栏整列统一用 Surface 铺满（含安全区），不再只有行区域有底色。
+            .scrollContentBackground(.hidden)
+            .background(Color.appSurface, ignoresSafeAreaEdges: .all)
             .navigationTitle("设置")
         } detail: {
             if let selection {
