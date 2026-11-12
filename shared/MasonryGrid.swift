@@ -6,6 +6,8 @@ struct MasonryGrid<Content: View>: View {
     let photos: [Photo]
     var minColumnWidth: CGFloat = 220
     var maxColumns = 6
+    /// 折叠屏建议使用偶数列，合页处能对半分。
+    var preferEvenColumns = false
     var spacing: CGFloat = 12
     var padding: CGFloat = 16
     var footer: AnyView? = nil
@@ -14,7 +16,8 @@ struct MasonryGrid<Content: View>: View {
     var body: some View {
         GeometryReader { geo in
             let inner = max(geo.size.width - padding * 2, minColumnWidth)
-            let count = min(maxColumns, max(1, Int((inner + spacing) / (minColumnWidth + spacing))))
+            let raw = min(maxColumns, max(1, Int((inner + spacing) / (minColumnWidth + spacing))))
+            let count = (preferEvenColumns && raw > 2 && raw % 2 == 1) ? raw - 1 : raw
             let colWidth = (inner - spacing * CGFloat(count - 1)) / CGFloat(count)
             let columns = Self.distribute(photos, count: count, width: colWidth, spacing: spacing)
 

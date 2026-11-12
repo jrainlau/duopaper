@@ -1,4 +1,4 @@
-import AppKit
+import Foundation
 import Observation
 
 @MainActor
@@ -59,21 +59,20 @@ final class WallpaperStore {
         phase = .ready
     }
 
-    /// 下载到「下载」文件夹并在 Finder 中选中。
-    static func download(_ photo: Photo, size: DownloadSize, key: String) async throws {
+    /// 下载原图到指定目录并返回文件地址；调用方决定之后怎么处理（Finder 中显示、存入相册等）。
+    static func download(_ photo: Photo, size: DownloadSize, key: String, into directory: URL) async throws -> URL {
         await UnsplashClient(key: key).trackDownload(photo)
         let (tmp, response) = try await URLSession.shared.download(from: UnsplashClient.downloadURL(photo, size: size))
         if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
             throw APIError.http(http.statusCode, "")
         }
         let ext = (response.mimeType ?? "").contains("png") ? "png" : "jpg"
-        let dir = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask)[0]
-        var dest = dir.appendingPathComponent("duopaper-\(photo.id).\(ext)")
+        var dest = directory.appendingPathComponent("duopaper-\(photo.id).\(ext)")
         var n = 1
         while FileManager.default.fileExists(atPath: dest.path) {
-            dest = dir.appendingPathComponent("duopaper-\(photo.id)-\(n).\(ext)"); n += 1
+            dest = directory.appendingPathComponent("duopaper-\(photo.id)-\(n).\(ext)"); n += 1
         }
         try FileManager.default.moveItem(at: tmp, to: dest)
-        NSWorkspace.shared.activateFileViewerSelecting([dest])
+        return dest
     }
 }

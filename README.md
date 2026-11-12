@@ -25,8 +25,9 @@
 
 ```
 web/    H5 版（React + Vite），部署到 GitHub Pages
-ios/    iOS 原生版（待实现）
+ios/    iOS 原生版（SwiftUI，适配 iPhone Duo）
 macos/  macOS 原生版（SwiftUI，遵循 Apple HIG）
+shared/ iOS 与 macOS 共用的 Swift 代码（模型、Unsplash 请求、收藏、瀑布流）
 ```
 
 ## macOS 版
@@ -39,6 +40,12 @@ bash macos/scripts/build-app.sh --install  # 同时安装到 /Applications
 ```
 
 首次打开如被 Gatekeeper 拦截，右键 App 选「打开」。Access Key 在 App 的「设置」（⌘,）中填写。
+
+## iOS 版（含 iPhone Duo）
+
+用 Xcode 打开 `ios/Duopaper.xcodeproj`，选 iPhone Duo 模拟器（Device Hub 里可开合、旋转），⌘R 运行。Access Key 在「设置」页填写。真机安装需要在 Xcode 的 Signing 里登录 Apple ID 选个人 Team。
+
+适配方式：只用标准 `TabView`（`.sidebarAdaptable`）、`NavigationStack`、sheet 与工具栏，按尺寸类而不是设备型号布局；外屏是 iPhone 布局，内屏自动变 regular 宽度，系统会把 Tab 栏和工具栏移到侧边；瀑布流在折叠屏上用偶数列。
 
 ## Web 开发（在 web/ 目录下）
 

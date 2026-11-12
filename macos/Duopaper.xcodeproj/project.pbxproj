@@ -18,6 +18,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		A00000000000000000000041 /* shared */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ../shared; sourceTree = "<group>"; };
 		A00000000000000000000004 /* Sources/Duopaper */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Sources/Duopaper; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
@@ -38,6 +39,7 @@
 			isa = PBXGroup;
 			children = (
 				A00000000000000000000004 /* Sources/Duopaper */,
+				A00000000000000000000041 /* shared */,
 				A00000000000000000000011 /* Info.plist */,
 				A00000000000000000000012 /* Duopaper.entitlements */,
 				A00000000000000000000006 /* Products */,
@@ -69,6 +71,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				A00000000000000000000004 /* Sources/Duopaper */,
+				A00000000000000000000041 /* shared */,
 			);
 			name = Duopaper;
 			packageProductDependencies = (
@@ -111,7 +114,13 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		A00000000000000000000028 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		A00000000000000000000028 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */

@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 struct ViewerView: View {
@@ -86,7 +87,11 @@ struct ViewerView: View {
         downloading = true
         Task {
             defer { downloading = false }
-            do { try await WallpaperStore.download(photo, size: size, key: accessKey) }
+            do {
+                let dir = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask)[0]
+                let file = try await WallpaperStore.download(photo, size: size, key: accessKey, into: dir)
+                NSWorkspace.shared.activateFileViewerSelecting([file])
+            }
             catch { errorMessage = error.localizedDescription }
         }
     }
