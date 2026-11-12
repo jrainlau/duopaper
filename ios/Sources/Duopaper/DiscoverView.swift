@@ -10,11 +10,6 @@ struct DiscoverView: View {
     @State private var searchText = ""
     @State private var refreshToken = 0
 
-    /// 菜单里固定只保留这三个分类，其余靠搜索，搜过的词进入「历史搜索」。
-    private static let pinned: [Topic] = ["wallpaper", "nature", "street photography"].compactMap { q in
-        Topic.all.first { $0.query == q }
-    }
-
     private var topicBinding: Binding<String> {
         Binding(
             get: { query },
@@ -38,14 +33,14 @@ struct DiscoverView: View {
                 .onSubmit(of: .search) {
                     let q = searchText.trimmingCharacters(in: .whitespaces)
                     query = q.isEmpty ? "wallpaper" : q
-                    if !q.isEmpty && !Self.pinned.contains(where: { $0.query == q.lowercased() }) { history.add(q) }
+                    if !q.isEmpty && !Topic.pinned.contains(where: { $0.query == q.lowercased() }) { history.add(q) }
                     refreshToken += 1
                 }
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
                         Menu {
                             Picker("分类", selection: topicBinding) {
-                                ForEach(Self.pinned) { topic in
+                                ForEach(Topic.pinned) { topic in
                                     Label(topic.title, systemImage: topic.symbol).tag(topic.query)
                                 }
                             }

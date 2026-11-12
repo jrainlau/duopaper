@@ -4,6 +4,7 @@ import SwiftUI
 struct ViewerView: View {
     let photo: Photo
     let accessKey: String
+    let onClose: () -> Void
 
     @Environment(FavoritesStore.self) private var favorites
     @AppStorage("downloadSize") private var sizeRaw = DownloadSize.standard.rawValue
@@ -38,6 +39,19 @@ struct ViewerView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .clipped()
+        .overlay(alignment: .topTrailing) {
+            Button(action: onClose) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 12, weight: .bold))
+                    .frame(width: 28, height: 28)
+                    .background(.regularMaterial, in: Circle())
+                    .contentShape(Circle())
+            }
+            .buttonStyle(.plain)
+            .padding(12)
+            .help("关闭")
+            .accessibilityLabel("关闭")
+        }
     }
 
     private var bar: some View {

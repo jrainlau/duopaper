@@ -3,6 +3,7 @@ import SwiftUI
 enum SidebarItem: Hashable {
     case favorites
     case topic(String)
+    case history(String)
 }
 
 struct ContentView: View {
@@ -11,6 +12,7 @@ struct ContentView: View {
     @AppStorage("orientation") private var orientationRaw = ""
 
     @Environment(FavoritesStore.self) private var favorites
+    @Environment(SearchHistoryStore.self) private var history
     @Environment(\.openSettings) private var openSettings
     @State private var store = WallpaperStore()
     @State private var searchText = ""
@@ -39,7 +41,7 @@ struct ContentView: View {
                     .transition(.opacity)
 
                 GeometryReader { geo in
-                    ViewerView(photo: photo, accessKey: accessKey)
+                    ViewerView(photo: photo, accessKey: accessKey) { viewing = nil }
                         .frame(width: min(geo.size.width * 0.84, 1180), height: min(geo.size.height * 0.84, 800))
                         .position(x: geo.size.width / 2, y: geo.size.height / 2)
                 }
@@ -63,11 +65,24 @@ struct ContentView: View {
                         .tag(SidebarItem.favorites)
                 }
                 Section("分类") {
-                    ForEach(Topic.all) { t in
+                    ForEach(Topic.pinned) { t in
                         Label { Text(t.title) } icon: {
                             Image(systemName: t.symbol).symbolRenderingMode(.hierarchical).foregroundStyle(t.tint)
                         }
                         .tag(SidebarItem.topic(t.query))
+                    }
+                }
+                if !history.items.isEmpty {
+                    Section("历史搜索") {
+                        ForEach(history.items, id: \.self) { item in
+                            Label(item, systemImage: "clock.arrow.circlepath")
+                                .tag(SidebarItem.history(item))
+                                .contextMenu {
+                                    Button("从历史中删除", systemImage: "trash") {
+                                        if let i = history.items.firstIndex(of: item) { history.remove(at: IndexSet(integer: i)) }
+                                    }
+                                }
+                        }
                     }
                 }
             }
@@ -81,7 +96,8 @@ struct ContentView: View {
         .onSubmit(of: .search) {
             let q = searchText.trimmingCharacters(in: .whitespaces)
             query = q.isEmpty ? "wallpaper" : q
-            sidebar = Topic.all.first { $0.query == query.lowercased() }.map { .topic($0.query) }
+            if !q.isEmpty && !Topic.pinned.contains(where: { $0.query == q.lowercased() }) { history.add(q) }
+            sidebar = sidebarItem(for: query)
             refreshToken += 1
         }
         .toolbar {
@@ -103,15 +119,22 @@ struct ContentView: View {
             await store.reload(key: accessKey, query: query, orientation: orientation)
         }
         .onChange(of: sidebar) { _, new in
-            if case let .topic(q) = new, q != query {
-                query = q
-                searchText = ""
+            switch new {
+            case let .topic(q), let .history(q):
+                if q != query { query = q; searchText = "" }
+            default: break
             }
         }
         .onAppear {
-            sidebar = .topic(query)
-            if !Topic.all.contains(where: { $0.query == query }) { searchText = query }
+            sidebar = sidebarItem(for: query)
+            if !Topic.pinned.contains(where: { $0.query == query }) { searchText = query }
         }
+    }
+
+    private func sidebarItem(for query: String) -> SidebarItem? {
+        if let t = Topic.pinned.first(where: { $0.query == query.lowercased() }) { return .topic(t.query) }
+        if let h = history.items.first(where: { $0.caseInsensitiveCompare(query) == .orderedSame }) { return .history(h) }
+        return nil
     }
 
     private var title: String {

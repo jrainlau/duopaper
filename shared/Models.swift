@@ -100,6 +100,11 @@ struct Topic: Identifiable, Hashable {
     let tint: Color
     var id: String { query }
 
+    /// 分类菜单里固定保留的三个，其余靠搜索；搜过的词进入「历史搜索」。
+    static var pinned: [Topic] {
+        ["wallpaper", "nature", "street photography"].compactMap { q in all.first { $0.query == q } }
+    }
+
     static let all: [Topic] = [
         .init(title: "精选", query: "wallpaper", symbol: "star", tint: .yellow),
         .init(title: "极简", query: "minimal", symbol: "circle.dashed", tint: .gray),
