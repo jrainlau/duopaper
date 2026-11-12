@@ -14,11 +14,7 @@ struct SettingsView: View {
     var body: some View {
         NavigationSplitView {
             List(SettingsSection.allCases, selection: $selection) { section in
-                Label {
-                    Text(section.title)
-                } icon: {
-                    Image(systemName: section.symbol).foregroundStyle(section.tint)
-                }
+                Label(section.title, systemImage: section.symbol)
                 .tag(section)
                 .listRowBackground(Color.clear)
             }

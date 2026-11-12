@@ -61,14 +61,12 @@ struct ContentView: View {
         NavigationSplitView {
             List(selection: $sidebar) {
                 Section {
-                    Label { Text("收藏") } icon: { Image(systemName: "star.fill").foregroundStyle(.yellow) }
+                    Label("收藏", systemImage: "star")
                         .tag(SidebarItem.favorites)
                 }
                 Section("分类") {
                     ForEach(Topic.pinned) { t in
-                        Label { Text(t.title) } icon: {
-                            Image(systemName: t.symbol).symbolRenderingMode(.hierarchical).foregroundStyle(t.tint)
-                        }
+                        Label(t.title, systemImage: t.symbol)
                         .tag(SidebarItem.topic(t.query))
                     }
                 }

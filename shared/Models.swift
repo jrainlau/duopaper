@@ -97,7 +97,6 @@ struct Topic: Identifiable, Hashable {
     let title: String
     let query: String
     let symbol: String
-    let tint: Color
     var id: String { query }
 
     /// 分类菜单里固定保留的三个，其余靠搜索；搜过的词进入「历史搜索」。
@@ -106,17 +105,17 @@ struct Topic: Identifiable, Hashable {
     }
 
     static let all: [Topic] = [
-        .init(title: "精选", query: "wallpaper", symbol: "star", tint: Color.appPrimary),
-        .init(title: "极简", query: "minimal", symbol: "circle.dashed", tint: .gray),
-        .init(title: "秋日", query: "autumn", symbol: "leaf", tint: .orange),
-        .init(title: "自然", query: "nature", symbol: "mountain.2", tint: .green),
-        .init(title: "3D", query: "3d render", symbol: "cube", tint: .indigo),
-        .init(title: "实验", query: "experimental", symbol: "flask", tint: .purple),
-        .init(title: "胶片", query: "film photography", symbol: "film", tint: .brown),
-        .init(title: "街拍", query: "street photography", symbol: "figure.walk", tint: .teal),
-        .init(title: "建筑", query: "architecture", symbol: "building.2", tint: .blue),
-        .init(title: "纹理", query: "textures", symbol: "square.grid.3x3", tint: .mint),
-        .init(title: "旅行", query: "travel", symbol: "airplane", tint: .cyan),
-        .init(title: "人物", query: "portrait", symbol: "person.crop.square", tint: .pink),
+        .init(title: "精选", query: "wallpaper", symbol: "star"),
+        .init(title: "极简", query: "minimal", symbol: "circle.dashed"),
+        .init(title: "秋日", query: "autumn", symbol: "leaf"),
+        .init(title: "自然", query: "nature", symbol: "mountain.2"),
+        .init(title: "3D", query: "3d render", symbol: "cube"),
+        .init(title: "实验", query: "experimental", symbol: "flask"),
+        .init(title: "胶片", query: "film photography", symbol: "film"),
+        .init(title: "街拍", query: "street photography", symbol: "figure.walk"),
+        .init(title: "建筑", query: "architecture", symbol: "building.2"),
+        .init(title: "纹理", query: "textures", symbol: "square.grid.3x3"),
+        .init(title: "旅行", query: "travel", symbol: "airplane"),
+        .init(title: "人物", query: "portrait", symbol: "person.crop.square"),
     ]
 }

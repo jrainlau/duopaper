@@ -5,18 +5,25 @@ import SwiftUI
 /// 设置：左侧栏目，右侧详情，和 iOS 版一致。
 struct SettingsView: View {
     @State private var selection: SettingsSection = .key
+    @State private var columns: NavigationSplitViewVisibility = .all
 
     var body: some View {
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $columns) {
             List(SettingsSection.macCases, selection: $selection) { section in
-                Label {
-                    Text(section.title)
-                } icon: {
-                    Image(systemName: section.symbol).foregroundStyle(section.tint)
-                }
-                .tag(section)
+                Label(section.title, systemImage: section.symbol)
+                    .tag(section)
             }
             .navigationSplitViewColumnWidth(190)
+            // 系统自带的侧边栏按钮在设置窗口里会跑到侧边栏左上角；换成自己的，固定在侧边栏标题栏最右边。
+            .toolbar(removing: .sidebarToggle)
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button("显示 / 隐藏侧边栏", systemImage: "sidebar.leading") {
+                        columns = columns == .all ? .detailOnly : .all
+                    }
+                    .help("显示 / 隐藏侧边栏")
+                }
+            }
         } detail: {
             detail
                 .navigationTitle(selection.title)

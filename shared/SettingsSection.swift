@@ -17,25 +17,15 @@ enum SettingsSection: String, CaseIterable, Identifiable {
 
     var symbol: String {
         switch self {
-        case .key: "key.fill"
+        case .key: "key"
         case .history: "clock.arrow.circlepath"
-        case .download: "arrow.down.circle.fill"
-        case .widget: "square.grid.2x2.fill"
-        case .cache: "internaldrive.fill"
-        case .about: "info.circle.fill"
+        case .download: "arrow.down.circle"
+        case .widget: "square.grid.2x2"
+        case .cache: "internaldrive"
+        case .about: "info.circle"
         }
     }
 
-    var tint: Color {
-        switch self {
-        case .key: .orange
-        case .history: .blue
-        case .download: .green
-        case .widget: .purple
-        case .cache: .gray
-        case .about: .indigo
-        }
-    }
 }
 
 extension SettingsSection {
