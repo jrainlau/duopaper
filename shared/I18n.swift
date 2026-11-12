@@ -243,6 +243,7 @@ enum L10n {
         "error.noKey": "No Access Key configured. Add one in Settings.",
         "error.invalidKey": "The Access Key is invalid or not active yet. Make sure it is the Access Key (not the Secret Key).",
         "error.quota": "Request quota exhausted (50 per hour for demo apps). Wait for the reset or request a higher limit.",
+        "quota.hourlyExhausted": "Hourly limit reached — try again after the top of the hour",
         "error.http": "Request failed (HTTP {code}){detail}",
 
         // 小组件（跟随系统语言）
@@ -397,6 +398,7 @@ enum L10n {
         "error.noKey": "尚未配置 Access Key。请在「设置」中填入。",
         "error.invalidKey": "Access Key 无效或尚未生效。请确认填的是 Access Key（不是 Secret Key）。",
         "error.quota": "请求配额已用尽（Demo 应用 50 次 / 小时），请等待重置或申请提高限额。",
+        "quota.hourlyExhausted": "本小时内请求次数已达上限，整点后自动重置",
         "error.http": "请求失败（HTTP {code}）{detail}",
 
         // 小组件（跟随系统语言）
@@ -551,6 +553,7 @@ enum L10n {
         "error.noKey": "尚未設定 Access Key。請在「設定」中填入。",
         "error.invalidKey": "Access Key 無效或尚未生效。請確認填的是 Access Key（不是 Secret Key）。",
         "error.quota": "請求額度已用完（Demo 應用程式 50 次 / 小時），請等待重置或申請提高額度。",
+        "quota.hourlyExhausted": "本小時內請求次數已達上限，整點後自動重置",
         "error.http": "請求失敗（HTTP {code}）{detail}",
 
         // 小工具（跟隨系統語言）

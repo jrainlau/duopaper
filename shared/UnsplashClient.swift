@@ -33,9 +33,15 @@ struct UnsplashClient {
 
     private func fetch(_ url: URL) async throws -> Data {
         let (data, response) = try await URLSession.shared.data(for: request(url))
-        if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
-            let detail = (try? JSONDecoder().decode([String: [String]].self, from: data))?["errors"]?.joined(separator: "; ") ?? ""
-            throw APIError.http(http.statusCode, detail)
+        if let http = response as? HTTPURLResponse {
+            // 每个响应头里都带剩余配额；失败时也先记录，气泡才能在配额耗尽的当次请求后弹出。
+            let remaining = http.value(forHTTPHeaderField: "X-RateLimit-Remaining").flatMap(Int.init)
+            let limit = http.value(forHTTPHeaderField: "X-RateLimit-Limit").flatMap(Int.init)
+            await MainActor.run { QuotaTracker.shared.record(statusCode: http.statusCode, remaining: remaining, limit: limit) }
+            if !(200..<300).contains(http.statusCode) {
+                let detail = (try? JSONDecoder().decode([String: [String]].self, from: data))?["errors"]?.joined(separator: "; ") ?? ""
+                throw APIError.http(http.statusCode, detail)
+            }
         }
         return data
     }
