@@ -7,8 +7,8 @@ cd "$(dirname "$0")/.."
 APP="build/Duopaper.app"
 ICON_SRC="../web/wallpaper-h5-icons/app/app-icon-1024.png"
 
-swift build --disable-sandbox -c release --arch arm64 --arch x86_64
-BIN="$(swift build --disable-sandbox -c release --arch arm64 --arch x86_64 --show-bin-path)/Duopaper"
+swift build --disable-sandbox -c release --arch arm64
+BIN="$(swift build --disable-sandbox -c release --arch arm64 --show-bin-path)/Duopaper"
 
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
