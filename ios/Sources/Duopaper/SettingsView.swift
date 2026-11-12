@@ -219,6 +219,8 @@ private struct WidgetSettingsView: View {
     @State private var draft: String
     @State private var cache = WidgetSource.load()
     @State private var fetching = false
+    /// 0...1：接口请求占前 10%，缩略图下载占后 90%。
+    @State private var fetchProgress = 0.0
     @State private var errorMessage: String?
     @State private var interval = WidgetShared.interval
     @State private var tapAction = WidgetShared.tapAction
@@ -279,7 +281,10 @@ private struct WidgetSettingsView: View {
                         .submitLabel(.search)
                         .onSubmit { load(fresh: false) }
                     if fetching {
-                        ProgressView()
+                        ProgressRing(value: fetchProgress)
+                            .frame(width: 22, height: 22)
+                            .accessibilityLabel(L("widget.source.fetching"))
+                            .accessibilityValue(Text(fetchProgress, format: .percent.precision(.fractionLength(0))))
                     } else {
                         // Form 行内的按钮要用 borderless，否则整行都会变成这个按钮的点击区域。
                         Button { load(fresh: true) } label: {
@@ -327,6 +332,7 @@ private struct WidgetSettingsView: View {
         let keyword = trimmedDraft
         guard !keyword.isEmpty, !fetching else { return }
         fetching = true
+        fetchProgress = 0.03
         Task {
             defer { fetching = false }
             do {
@@ -336,7 +342,10 @@ private struct WidgetSettingsView: View {
                 WidgetShared.sourceKeyword = result.keyword
                 // 和主页搜索一致：置顶分类不进历史，其余记入「搜索历史」。
                 if !Topic.pinned.contains(where: { $0.query == result.keyword.lowercased() }) { history.add(result.keyword) }
-                await WidgetSync.shared.sync(favorites: favorites.photos)
+                withAnimation(.easeOut(duration: 0.25)) { fetchProgress = 0.1 }
+                await WidgetSync.shared.sync(favorites: favorites.photos) { value in
+                    withAnimation(.easeOut(duration: 0.25)) { fetchProgress = 0.1 + 0.9 * value }
+                }
                 status = WidgetSync.status()
             } catch {
                 errorMessage = error.localizedDescription
@@ -418,6 +427,22 @@ private struct WidgetSettingsView: View {
                 : L("widget.statusFooterBad"))
         }
         .appRows()
+    }
+}
+
+/// 圆环进度条：灰色底环 + 主题色进度弧，从 12 点钟方向顺时针填充。
+private struct ProgressRing: View {
+    let value: Double
+
+    var body: some View {
+        ZStack {
+            Circle().stroke(Color.secondary.opacity(0.25), lineWidth: 3)
+            Circle()
+                .trim(from: 0, to: max(0.03, min(1, value)))
+                .stroke(Color.accentColor, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+        }
+        .padding(1.5)
     }
 }
 

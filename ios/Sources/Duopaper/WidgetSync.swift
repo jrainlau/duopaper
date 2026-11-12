@@ -35,17 +35,20 @@ actor WidgetSync {
     }
 
     /// 按当前来源对账。收藏变化时，来源是关键词就不动小组件（避免无谓重排时间线）。
-    func sync(favorites: [Photo], favoritesChanged: Bool = false) async {
+    /// progress：缩略图下载进度 0...1（只汇报本次调用自己跑的那一轮），在主线程回调。
+    func sync(favorites: [Photo], favoritesChanged: Bool = false, progress: (@MainActor @Sendable (Double) -> Void)? = nil) async {
         if favoritesChanged && !WidgetShared.sourceKeyword.isEmpty { return }
-        await sync(Self.photos(favorites: favorites))
+        await sync(Self.photos(favorites: favorites), progress: progress)
     }
 
-    func sync(_ photos: [Photo]) async {
+    func sync(_ photos: [Photo], progress: (@MainActor @Sendable (Double) -> Void)? = nil) async {
         if running { pending = photos; return }
         running = true
         var current = photos
+        var report = progress
         while true {
-            await run(current)
+            await run(current, progress: report)
+            report = nil
             guard let next = pending else { break }
             pending = nil
             current = next
@@ -53,7 +56,7 @@ actor WidgetSync {
         running = false
     }
 
-    private func run(_ photos: [Photo]) async {
+    private func run(_ photos: [Photo], progress: (@MainActor @Sendable (Double) -> Void)?) async {
         guard let dir = WidgetShared.directory else { return }
         let fm = FileManager.default
 
@@ -62,16 +65,20 @@ actor WidgetSync {
         WidgetCenter.shared.reloadTimelines(ofKind: WidgetShared.kind)
 
         var downloaded = false
-        for photo in photos {
-            guard let dest = WidgetShared.thumbDestination(for: photo.id), !fm.fileExists(atPath: dest.path) else { continue }
-            do {
-                let (data, response) = try await URLSession.shared.data(from: UnsplashClient.widgetThumbURL(photo))
-                if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) { continue }
-                try data.write(to: dest, options: .atomic)
+        let missing = photos.filter { photo in
+            WidgetShared.thumbDestination(for: photo.id).map { !fm.fileExists(atPath: $0.path) } ?? false
+        }
+        var finished = 0
+        await progress?(missing.isEmpty ? 1 : 0)
+        for photo in missing {
+            if let dest = WidgetShared.thumbDestination(for: photo.id),
+               let (data, response) = try? await URLSession.shared.data(from: UnsplashClient.widgetThumbURL(photo)),
+               (response as? HTTPURLResponse).map({ (200..<300).contains($0.statusCode) }) ?? true,
+               (try? data.write(to: dest, options: .atomic)) != nil {
                 downloaded = true
-            } catch {
-                continue
             }
+            finished += 1
+            await progress?(Double(finished) / Double(missing.count))
         }
 
         let keep = Set(photos.map { "\($0.id).jpg" })
