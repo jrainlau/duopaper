@@ -115,7 +115,7 @@ struct ContentView: View {
             }
         }
         .task(id: LoadID(key: accessKey, query: query, orientation: orientationRaw, token: refreshToken)) {
-            await store.reload(key: accessKey, query: query, orientation: orientation)
+            await store.reload(key: accessKey, source: .unsplash, query: query, orientation: orientation)
         }
         .onChange(of: sidebar) { _, new in
             switch new {
@@ -195,7 +195,7 @@ struct ContentView: View {
             )
             .onAppear {
                 if paginated && tail.contains(photo.id) {
-                    Task { await store.loadMore(key: accessKey, query: query, orientation: orientation) }
+                    Task { await store.loadMore(key: accessKey, source: .unsplash, query: query, orientation: orientation) }
                 }
             }
         }

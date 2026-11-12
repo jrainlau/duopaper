@@ -9,7 +9,7 @@ struct PhotoCard: View {
     var body: some View {
         Rectangle()
             .fill(photo.tint)
-            .overlay { RemoteImage(url: UnsplashClient.thumbURL(photo), tint: photo.tint) }
+            .overlay { RemoteImage(url: photo.thumbURL, tint: photo.tint) }
             .overlay(alignment: .bottomLeading) {
                 // Unsplash 要求展示图片时署名并链到摄影师主页；触屏没有 hover，所以常驻。
                 Attribution(photo: photo, style: .compact, onDark: true)
@@ -44,7 +44,7 @@ struct PhotoCard: View {
                 Button(L("card.preview"), systemImage: "eye", action: onOpen)
                 Button(isFavorite ? L("favorites.remove") : L("favorites.add"), systemImage: isFavorite ? "star.slash" : "star", action: onToggleFavorite)
                 Link(destination: photo.pageURL) {
-                    Label(L("card.openInUnsplash"), systemImage: "safari")
+                    Label(photo.source == .unsplash ? L("card.openInUnsplash") : L("card.openInPexels"), systemImage: "safari")
                 }
             }
     }

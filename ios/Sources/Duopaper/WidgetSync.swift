@@ -54,7 +54,7 @@ actor WidgetSync {
         for photo in photos {
             guard let dest = WidgetShared.thumbDestination(for: photo.id), !fm.fileExists(atPath: dest.path) else { continue }
             do {
-                let (data, response) = try await URLSession.shared.data(from: UnsplashClient.widgetThumbURL(photo))
+                let (data, response) = try await URLSession.shared.data(from: photo.widgetThumbURL)
                 if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) { continue }
                 try data.write(to: dest, options: .atomic)
                 downloaded = true

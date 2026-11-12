@@ -102,7 +102,7 @@ struct ViewerView: View {
             defer { downloading = false }
             do {
                 let dir = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask)[0]
-                let file = try await WallpaperStore.download(photo, size: size, key: accessKey, into: dir)
+                let file = try await WallpaperStore.download(photo, size: size, into: dir)
                 NSWorkspace.shared.activateFileViewerSelecting([file])
             }
             catch { errorMessage = error.localizedDescription }

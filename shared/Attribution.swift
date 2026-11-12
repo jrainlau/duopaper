@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Unsplash API 规范要求的署名：「Photo by 摄影师 on Unsplash」，
-/// 摄影师链到他的 Unsplash 主页，Unsplash 链到 Unsplash，链接都带 UTM。
+/// 署名：「Photo by 摄影师 on Unsplash / Pexels」，
+/// 摄影师链到他的主页，品牌名链到图源官网；Unsplash 的链接带 UTM（API 规范要求）。
 struct Attribution: View {
     enum Style {
         /// 卡片角标：「摄影师 / Unsplash」，一行，适合窄列。
@@ -21,7 +21,7 @@ struct Attribution: View {
                 Link(photo.user.name, destination: photo.photographerURL)
                     .lineLimit(1)
                 Text("/")
-                Link("Unsplash", destination: UnsplashLink.home)
+                Link(photo.source.title, destination: photo.source.home)
                     .layoutPriority(1)
             }
             .font(.caption2.weight(.medium))
@@ -35,7 +35,7 @@ struct Attribution: View {
                 }
                 HStack(spacing: 3) {
                     Text("on")
-                    Link("Unsplash", destination: UnsplashLink.home)
+                    Link(photo.source.title, destination: photo.source.home)
                 }
             }
             .font(.caption)

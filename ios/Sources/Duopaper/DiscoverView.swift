@@ -2,6 +2,8 @@ import SwiftUI
 
 struct DiscoverView: View {
     @AppStorage("accessKey") private var accessKey = ""
+    @AppStorage("pexelsKey") private var pexelsKey = ""
+    @AppStorage("photoSource") private var sourceRaw = PhotoSource.unsplash.rawValue
     @AppStorage("query") private var query = "wallpaper"
     @AppStorage("orientation") private var orientationRaw = ""
 
@@ -11,6 +13,9 @@ struct DiscoverView: View {
     @State private var refreshToken = 0
     @State private var loadTask: Task<Void, Never>?
     @State private var didInitialLoad = false
+
+    private var source: PhotoSource { PhotoSource(rawValue: sourceRaw) ?? .unsplash }
+    private var activeKey: String { source == .unsplash ? accessKey : pexelsKey }
 
     private var topicBinding: Binding<String> {
         Binding(
@@ -22,7 +27,7 @@ struct DiscoverView: View {
     private var orientation: Orientation { Orientation(rawValue: orientationRaw) ?? .any }
 
     private struct LoadID: Equatable {
-        let key: String, query: String, orientation: String, token: Int
+        let key: String, source: String, query: String, orientation: String, token: Int
     }
 
     var body: some View {
@@ -72,13 +77,25 @@ struct DiscoverView: View {
                         }
                     }
                     ToolbarItem(placement: .primaryAction) {
+                        Menu {
+                            Picker(L("discover.source"), selection: $sourceRaw) {
+                                ForEach(PhotoSource.allCases) { source in
+                                    Label(source.title, systemImage: "photo.stack").tag(source.rawValue)
+                                }
+                            }
+                            .pickerStyle(.inline)
+                        } label: {
+                            Label(L("discover.source"), systemImage: "photo.stack")
+                        }
+                    }
+                    ToolbarItem(placement: .primaryAction) {
                         Button(L("discover.refresh"), systemImage: "arrow.clockwise") { refreshToken += 1 }
                     }
                 }
         }
-        // 只在「用户明确操作」时加载：首次进入、换分类 / 搜索 / 方向、换密钥、点刷新。
+        // 只在「用户明确操作」时加载：首次进入、换图源 / 分类 / 搜索 / 方向、换密钥、点刷新。
         // 不用 .task(id:)：它会在切 Tab 回来（视图重新出现）时重新执行，造成意外刷新。
-        .onChange(of: LoadID(key: accessKey, query: query, orientation: orientationRaw, token: refreshToken)) {
+        .onChange(of: LoadID(key: activeKey, source: sourceRaw, query: query, orientation: orientationRaw, token: refreshToken)) {
             startLoad()
         }
         .onAppear {
@@ -92,14 +109,14 @@ struct DiscoverView: View {
     /// 加载任务挂在 @State 上而不是视图生命周期上：切走 Tab 不会取消它，切回来也不会重新触发。
     private func startLoad() {
         loadTask?.cancel()
-        let key = accessKey, query = query, orientation = orientation
-        loadTask = Task { await store.reload(key: key, query: query, orientation: orientation) }
+        let key = activeKey, source = source, query = query, orientation = orientation
+        loadTask = Task { await store.reload(key: key, source: source, query: query, orientation: orientation) }
     }
 
     @ViewBuilder
     private var content: some View {
         switch store.phase {
-        case .idle where accessKey.isEmpty:
+        case .idle where activeKey.isEmpty:
             ContentUnavailableView {
                 Label(L("discover.noKey.title"), systemImage: "key")
             } description: {
@@ -124,7 +141,7 @@ struct DiscoverView: View {
             PhotoGridView(
                 photos: store.photos,
                 footer: store.loadingMore ? AnyView(ProgressView().padding(.bottom, 12)) : nil,
-                onNearEnd: { Task { await store.loadMore(key: accessKey, query: query, orientation: orientation) } }
+                onNearEnd: { Task { await store.loadMore(key: activeKey, source: source, query: query, orientation: orientation) } }
             )
             .refreshable { refreshToken += 1 }
         }

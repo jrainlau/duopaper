@@ -83,51 +83,68 @@ private struct LanguageSettingsView: View {
 private struct KeySettingsView: View {
     let onVerified: () -> Void
 
-    @AppStorage("accessKey") private var accessKey = ""
+    var body: some View {
+        Form {
+            KeyConfigSection(source: .unsplash, onVerified: onVerified)
+            KeyConfigSection(source: .pexels, onVerified: onVerified)
+        }
+        .appPage()
+    }
+}
+
+/// 单个图源的密钥配置：各自独立保存与验证，互不影响。
+private struct KeyConfigSection: View {
+    let source: PhotoSource
+    let onVerified: () -> Void
+
+    @AppStorage("accessKey") private var unsplashKey = ""
+    @AppStorage("pexelsKey") private var pexelsKey = ""
     @State private var draft = ""
     @State private var verifying = false
     @State private var errorMessage: String?
 
+    private var storedKey: String { source == .unsplash ? unsplashKey : pexelsKey }
     private var trimmed: String { draft.trimmingCharacters(in: .whitespacesAndNewlines) }
 
     var body: some View {
-        Form {
-            Section {
-                SecureField("Access Key", text: $draft, prompt: Text(accessKey.isEmpty ? L("key.placeholder.empty") : L("key.placeholder.configured")))
-                    .textContentType(.password)
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
-                    .submitLabel(.go)
-                    .onSubmit(saveAndVerify)
+        Section {
+            SecureField(source.title, text: $draft, prompt: Text(storedKey.isEmpty ? L("key.placeholder.empty") : L("key.placeholder.configured")))
+                .textContentType(.password)
+                .autocorrectionDisabled()
+                .textInputAutocapitalization(.never)
+                .submitLabel(.go)
+                .onSubmit(saveAndVerify)
 
-                Button(action: saveAndVerify) {
-                    HStack {
-                        Text(L("key.saveAndVerify"))
-                        if verifying { Spacer(); ProgressView() }
-                    }
+            Button(action: saveAndVerify) {
+                HStack {
+                    Text(L("key.saveAndVerify"))
+                    if verifying { Spacer(); ProgressView() }
                 }
-                .disabled(trimmed.isEmpty || verifying)
-            } header: {
-                Text("Access Key")
-            } footer: {
-                Text(L("key.footer"))
             }
-            .appRows()
-
-            if !accessKey.isEmpty {
-                Section {
-                    Label(L("key.configured"), systemImage: "checkmark.seal.fill").foregroundStyle(Color.appSuccess)
-                    Button(L("key.clear"), role: .destructive) { accessKey = "" }
-                }
-                .appRows()
-            }
+            .disabled(trimmed.isEmpty || verifying)
+        } header: {
+            Text(source.title)
+        } footer: {
+            Text(source == .unsplash ? L("key.footer") : L("key.pexels.footer"))
         }
-        .appPage()
+        .appRows()
         .alert(L("key.verifyFailed"), isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
             Button(L("common.ok")) {}
         } message: {
             Text(errorMessage ?? "")
         }
+
+        if !storedKey.isEmpty {
+            Section {
+                Label(L("key.configured"), systemImage: "checkmark.seal.fill").foregroundStyle(Color.appSuccess)
+                Button(L("key.clear"), role: .destructive) { setStored("") }
+            }
+            .appRows()
+        }
+    }
+
+    private func setStored(_ value: String) {
+        if source == .unsplash { unsplashKey = value } else { pexelsKey = value }
     }
 
     private func saveAndVerify() {
@@ -137,8 +154,11 @@ private struct KeySettingsView: View {
         Task {
             defer { verifying = false }
             do {
-                try await UnsplashClient(key: key).validate()
-                accessKey = key
+                switch source {
+                case .unsplash: try await UnsplashClient(key: key).validate()
+                case .pexels: try await PexelsClient(key: key).validate()
+                }
+                setStored(key)
                 draft = ""
                 onVerified()
             } catch {
@@ -316,6 +336,7 @@ private struct AboutSettingsView: View {
             .appRows()
             Section {
                 Link("Unsplash License", destination: URL(string: "https://unsplash.com/license")!)
+                Link("Pexels License", destination: URL(string: "https://www.pexels.com/license/")!)
                 Link(L("about.apiGuidelines"), destination: URL(string: "https://help.unsplash.com/en/articles/2511245-unsplash-api-guidelines")!)
             } footer: {
                 Text(L("about.footer"))

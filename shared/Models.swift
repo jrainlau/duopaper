@@ -33,10 +33,51 @@ struct Photo: Decodable, Identifiable, Hashable {
     let urls: Urls
     let links: Links
     let user: User
+    /// 图片来源；旧版收藏等持久化数据里没有该字段，默认 Unsplash。
+    let source: PhotoSource
 
     enum CodingKeys: String, CodingKey {
-        case id, width, height, color, urls, links, user
+        case id, width, height, color, urls, links, user, source
         case altDescription = "alt_description"
+    }
+
+    init(
+        id: String, width: Int, height: Int, color: String?, altDescription: String?,
+        urls: Urls, links: Links, user: User, source: PhotoSource = .unsplash
+    ) {
+        self.id = id
+        self.width = width
+        self.height = height
+        self.color = color
+        self.altDescription = altDescription
+        self.urls = urls
+        self.links = links
+        self.user = user
+        self.source = source
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        width = try c.decode(Int.self, forKey: .width)
+        height = try c.decode(Int.self, forKey: .height)
+        color = try c.decodeIfPresent(String.self, forKey: .color)
+        altDescription = try c.decodeIfPresent(String.self, forKey: .altDescription)
+        urls = try c.decode(Urls.self, forKey: .urls)
+        links = try c.decode(Links.self, forKey: .links)
+        user = try c.decode(User.self, forKey: .user)
+        source = try c.decodeIfPresent(PhotoSource.self, forKey: .source) ?? .unsplash
+    }
+}
+
+/// 只覆盖指定参数、其余保留的 URL 改写工具（Unsplash 的 ixid 统计参数必须留存）。
+enum URLParams {
+    static func replacing(_ url: URL, _ params: [String: String]) -> URL {
+        var c = URLComponents(url: url, resolvingAgainstBaseURL: false)!
+        var items = (c.queryItems ?? []).filter { params[$0.name] == nil }
+        items += params.sorted { $0.key < $1.key }.map { URLQueryItem(name: $0.key, value: $0.value) }
+        c.queryItems = items
+        return c.url!
     }
 }
 
@@ -56,14 +97,55 @@ enum UnsplashLink {
 }
 
 extension Photo {
-    /// 摄影师个人主页（带 UTM）；旧数据没有主页链接时退回到照片页。
-    var photographerURL: URL { UnsplashLink.tagged(user.links?.html ?? links.html) }
-    /// 照片在 Unsplash 上的页面（带 UTM）。
-    var pageURL: URL { UnsplashLink.tagged(links.html) }
+    /// 摄影师个人主页；Unsplash 按规范带 UTM，Pexels 保持原链接。
+    var photographerURL: URL {
+        let url = user.links?.html ?? links.html
+        return source == .unsplash ? UnsplashLink.tagged(url) : url
+    }
+    /// 照片原图源页面。
+    var pageURL: URL { source == .unsplash ? UnsplashLink.tagged(links.html) : links.html }
     /// Unsplash 返回的主色，用作占位底色。
     var tint: Color {
         guard let color, color.hasPrefix("#"), let v = UInt32(color.dropFirst(), radix: 16) else { return Color.gray.opacity(0.3) }
         return Color(red: Double((v >> 16) & 0xFF) / 255, green: Double((v >> 8) & 0xFF) / 255, blue: Double(v & 0xFF) / 255)
+    }
+
+    /// 瀑布流缩略图：640px / q75，体积小，Retina 下约 320pt 宽的列也足够清晰。
+    var thumbURL: URL {
+        switch source {
+        case .unsplash: UnsplashClient.thumbURL(self)
+        case .pexels: URLParams.replacing(urls.regular, ["w": "640"])
+        }
+    }
+
+    /// 小组件专用缩略图：1080px，一张约 100KB 以内。
+    var widgetThumbURL: URL {
+        switch source {
+        case .unsplash: UnsplashClient.widgetThumbURL(self)
+        case .pexels: URLParams.replacing(urls.regular, ["w": "1080"])
+        }
+    }
+
+    /// 预览图。
+    var previewURL: URL {
+        switch source {
+        case .unsplash: UnsplashClient.previewURL(self)
+        case .pexels: URLParams.replacing(urls.regular, ["w": "1600"])
+        }
+    }
+
+    /// 下载地址，按清晰度取对应尺寸。
+    func downloadURL(size: DownloadSize) -> URL {
+        switch source {
+        case .unsplash: UnsplashClient.downloadURL(self, size: size)
+        case .pexels:
+            switch size {
+            case .standard: URLParams.replacing(urls.full, ["w": "1880"])
+            case .raw: urls.raw
+            case .w2560: URLParams.replacing(urls.raw, ["w": "2560"])
+            case .w3840: URLParams.replacing(urls.raw, ["w": "3840"])
+            }
+        }
     }
 }
 
@@ -82,6 +164,7 @@ struct SearchPage: Codable {
 struct PhotoBox: Codable {
     let photo: Photo
 
+    init(photo: Photo) { self.photo = photo }
     init(from decoder: Decoder) throws { photo = try Photo(from: decoder) }
     func encode(to encoder: Encoder) throws { try photo.encode(to: encoder) }
 }

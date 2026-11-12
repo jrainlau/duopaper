@@ -97,11 +97,7 @@ struct UnsplashClient {
 
     /// 只覆盖指定参数，保留 ixid 等必须留存的统计参数。
     private static func replacing(_ url: URL, _ params: [String: String]) -> URL {
-        var c = URLComponents(url: url, resolvingAgainstBaseURL: false)!
-        var items = (c.queryItems ?? []).filter { params[$0.name] == nil }
-        items += params.sorted { $0.key < $1.key }.map { URLQueryItem(name: $0.key, value: $0.value) }
-        c.queryItems = items
-        return c.url!
+        URLParams.replacing(url, params)
     }
 }
 

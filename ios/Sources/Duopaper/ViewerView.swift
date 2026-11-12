@@ -82,7 +82,6 @@ private struct ViewerCard: View {
     let barHeight: CGFloat
     let onClose: () -> Void
 
-    @AppStorage("accessKey") private var accessKey = ""
     @AppStorage("downloadSize") private var sizeRaw = DownloadSize.standard.rawValue
     @Environment(FavoritesStore.self) private var favorites
     @State private var downloading = false
@@ -95,8 +94,8 @@ private struct ViewerCard: View {
         VStack(spacing: 0) {
             ZStack {
                 photo.tint
-                RemoteImage(url: UnsplashClient.thumbURL(photo), tint: .clear, contentMode: .fill)
-                RemoteImage(url: UnsplashClient.previewURL(photo), tint: .clear, contentMode: .fill)
+                RemoteImage(url: photo.thumbURL, tint: .clear, contentMode: .fill)
+                RemoteImage(url: photo.previewURL, tint: .clear, contentMode: .fill)
             }
             .frame(width: imageWidth, height: imageHeight)
             .clipped()
@@ -173,7 +172,7 @@ private struct ViewerCard: View {
         Task {
             defer { downloading = false }
             do {
-                let file = try await WallpaperStore.download(photo, size: size, key: accessKey, into: FileManager.default.temporaryDirectory)
+                let file = try await WallpaperStore.download(photo, size: size, into: FileManager.default.temporaryDirectory)
                 defer { try? FileManager.default.removeItem(at: file) }
                 try await saveToPhotos(file)
                 show(L("viewer.savedAlbum", ["album": Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "Duopaper"]))

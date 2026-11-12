@@ -129,10 +129,11 @@ enum L10n {
         "discover.history": "History",
         "discover.filter": "Filter",
         "discover.refresh": "Refresh",
+        "discover.source": "Source",
         "discover.shuffle": "Shuffle",
         "discover.shuffleHint": "Shuffle (random pages)",
-        "discover.noKey.title": "No Access Key yet",
-        "discover.noKey.body": "Add your Unsplash Access Key in Settings to start browsing.",
+        "discover.noKey.title": "No API Key yet",
+        "discover.noKey.body": "Add the API key for the selected source in Settings to start browsing.",
         "discover.openSettings": "Open Settings",
         "discover.loading": "Fetching…",
         "discover.loadFailed": "Failed to load",
@@ -149,6 +150,7 @@ enum L10n {
         "card.wallpaperBy": "{name}’s wallpaper",
         "card.preview": "Preview",
         "card.openInUnsplash": "Open in Unsplash",
+        "card.openInPexels": "Open in Pexels",
         "viewer.closePreview": "Close preview",
         "viewer.quality": "Quality",
         "viewer.saveToAlbum": "Save to Photos",
@@ -161,7 +163,7 @@ enum L10n {
         // 设置（栏目）
         "settings.title": "Settings",
         "settings.pickSection": "Pick a section",
-        "settings.section.key": "Unsplash Key",
+        "settings.section.key": "API Keys",
         "settings.section.history": "Search History",
         "settings.section.download": "Download",
         "settings.section.widget": "Widget",
@@ -183,6 +185,7 @@ enum L10n {
         "key.clearShort": "Clear",
         "key.verifyFailed": "Verification failed",
         "key.notSaved": "Key not saved.",
+        "key.pexels.footer": "Create a free API key at [Pexels API](https://www.pexels.com/api/). The free tier allows 200 requests per hour. The key stays on this device and is sent only to api.pexels.com. Saving verifies it with the lightest API call first.",
 
         // 设置（搜索历史）
         "history.empty.title": "No search history",
@@ -229,12 +232,12 @@ enum L10n {
         // 设置（关于）
         "about.version": "Version",
         "about.apiGuidelines": "Unsplash API Guidelines",
-        "about.footer": "Photos provided by Unsplash and its photographers. Every photo credits the photographer and links to their Unsplash profile; each save reports one download to Unsplash per the API guidelines.",
+        "about.footer": "Photos provided by Unsplash, Pexels and their photographers. Unsplash photos credit the photographer with a link to their profile, and each save reports one download to Unsplash per the API guidelines.",
 
         // 错误
-        "error.noKey": "No Access Key configured. Add one in Settings.",
-        "error.invalidKey": "The Access Key is invalid or not active yet. Make sure it is the Access Key (not the Secret Key).",
-        "error.quota": "Request quota exhausted (50 per hour for demo apps). Wait for the reset or request a higher limit.",
+        "error.noKey": "No API Key configured for this source. Add one in Settings.",
+        "error.invalidKey": "The API key is invalid or not active yet. Make sure it is the Access Key (not the Secret Key).",
+        "error.quota": "Request quota exhausted. Wait for the reset or request a higher limit.",
         "error.http": "Request failed (HTTP {code}){detail}",
 
         // 小组件（跟随系统语言）
@@ -283,10 +286,11 @@ enum L10n {
         "discover.history": "历史搜索",
         "discover.filter": "筛选",
         "discover.refresh": "刷新",
+        "discover.source": "图源",
         "discover.shuffle": "换一批",
         "discover.shuffleHint": "换一批（随机取片）",
-        "discover.noKey.title": "尚未配置 Access Key",
-        "discover.noKey.body": "到「设置」里填入你的 Unsplash Access Key 后即可开始取片。",
+        "discover.noKey.title": "尚未配置 API Key",
+        "discover.noKey.body": "到「设置」里填入当前图源的 API Key 后即可开始取片。",
         "discover.openSettings": "打开设置",
         "discover.loading": "正在取片…",
         "discover.loadFailed": "无法加载",
@@ -303,6 +307,7 @@ enum L10n {
         "card.wallpaperBy": "{name} 的壁纸",
         "card.preview": "预览",
         "card.openInUnsplash": "在 Unsplash 中打开",
+        "card.openInPexels": "在 Pexels 中打开",
         "viewer.closePreview": "关闭预览",
         "viewer.quality": "清晰度",
         "viewer.saveToAlbum": "保存到相册",
@@ -315,7 +320,7 @@ enum L10n {
         // 设置（栏目）
         "settings.title": "设置",
         "settings.pickSection": "选择一个栏目",
-        "settings.section.key": "Unsplash 密钥",
+        "settings.section.key": "图源密钥",
         "settings.section.history": "搜索历史",
         "settings.section.download": "下载",
         "settings.section.widget": "小组件",
@@ -337,6 +342,7 @@ enum L10n {
         "key.clearShort": "清除",
         "key.verifyFailed": "验证失败",
         "key.notSaved": "密钥未保存。",
+        "key.pexels.footer": "到 [Pexels API](https://www.pexels.com/api/) 免费申请 API Key。免费额度 200 次 / 小时。密钥只保存在本机，只发送给 api.pexels.com。保存时会先用一个最轻的接口验证，通过后才会保存。",
 
         // 设置（搜索历史）
         "history.empty.title": "暂无搜索历史",
@@ -383,12 +389,12 @@ enum L10n {
         // 设置（关于）
         "about.version": "版本",
         "about.apiGuidelines": "Unsplash API 使用规范",
-        "about.footer": "Photos provided by Unsplash 及其摄影师。每张图片都标注了摄影师并链接到其 Unsplash 主页；每次保存图片都会按 API 规范向 Unsplash 上报一次下载。",
+        "about.footer": "Photos provided by Unsplash、Pexels 及其摄影师。Unsplash 图片按 API 规范标注摄影师主页链接，每次保存都会向 Unsplash 上报一次下载。",
 
         // 错误
-        "error.noKey": "尚未配置 Access Key。请在「设置」中填入。",
-        "error.invalidKey": "Access Key 无效或尚未生效。请确认填的是 Access Key（不是 Secret Key）。",
-        "error.quota": "请求配额已用尽（Demo 应用 50 次 / 小时），请等待重置或申请提高限额。",
+        "error.noKey": "当前图源尚未配置 API Key。请在「设置」中填入。",
+        "error.invalidKey": "API Key 无效或尚未生效。请确认填的是 Access Key（不是 Secret Key）。",
+        "error.quota": "请求配额已用尽，请等待重置或申请提高限额。",
         "error.http": "请求失败（HTTP {code}）{detail}",
 
         // 小组件（跟随系统语言）
@@ -437,10 +443,11 @@ enum L10n {
         "discover.history": "搜尋紀錄",
         "discover.filter": "篩選",
         "discover.refresh": "重新整理",
+        "discover.source": "圖源",
         "discover.shuffle": "換一批",
         "discover.shuffleHint": "換一批（隨機取圖）",
-        "discover.noKey.title": "尚未設定 Access Key",
-        "discover.noKey.body": "到「設定」裡填入你的 Unsplash Access Key 後即可開始取圖。",
+        "discover.noKey.title": "尚未設定 API Key",
+        "discover.noKey.body": "到「設定」裡填入當前圖源的 API Key 後即可開始取圖。",
         "discover.openSettings": "打開設定",
         "discover.loading": "正在取圖…",
         "discover.loadFailed": "無法載入",
@@ -457,6 +464,7 @@ enum L10n {
         "card.wallpaperBy": "{name} 的桌布",
         "card.preview": "預覽",
         "card.openInUnsplash": "在 Unsplash 中打開",
+        "card.openInPexels": "在 Pexels 中打開",
         "viewer.closePreview": "關閉預覽",
         "viewer.quality": "畫質",
         "viewer.saveToAlbum": "儲存到相簿",
@@ -469,7 +477,7 @@ enum L10n {
         // 設定（欄目）
         "settings.title": "設定",
         "settings.pickSection": "選擇一個欄目",
-        "settings.section.key": "Unsplash 金鑰",
+        "settings.section.key": "圖源金鑰",
         "settings.section.history": "搜尋紀錄",
         "settings.section.download": "下載",
         "settings.section.widget": "小工具",
@@ -491,6 +499,7 @@ enum L10n {
         "key.clearShort": "清除",
         "key.verifyFailed": "驗證失敗",
         "key.notSaved": "金鑰未儲存。",
+        "key.pexels.footer": "到 [Pexels API](https://www.pexels.com/api/) 免費申請 API Key。免費額度 200 次 / 小時。金鑰只保存在本機，只傳送給 api.pexels.com。儲存時會先用一個最輕的介面驗證，通過後才會保存。",
 
         // 設定（搜尋紀錄）
         "history.empty.title": "沒有搜尋紀錄",
@@ -537,12 +546,12 @@ enum L10n {
         // 設定（關於）
         "about.version": "版本",
         "about.apiGuidelines": "Unsplash API 使用規範",
-        "about.footer": "Photos provided by Unsplash 及其攝影師。每張圖片都標註了攝影師並連結到其 Unsplash 主頁；每次儲存圖片都會按 API 規範向 Unsplash 上報一次下載。",
+        "about.footer": "Photos provided by Unsplash、Pexels 及其攝影師。Unsplash 圖片按 API 規範標註攝影師主頁連結，每次儲存都會向 Unsplash 上報一次下載。",
 
         // 錯誤
-        "error.noKey": "尚未設定 Access Key。請在「設定」中填入。",
-        "error.invalidKey": "Access Key 無效或尚未生效。請確認填的是 Access Key（不是 Secret Key）。",
-        "error.quota": "請求額度已用完（Demo 應用程式 50 次 / 小時），請等待重置或申請提高額度。",
+        "error.noKey": "當前圖源尚未設定 API Key。請在「設定」中填入。",
+        "error.invalidKey": "API Key 無效或尚未生效。請確認填的是 Access Key（不是 Secret Key）。",
+        "error.quota": "請求配額已用盡，請等待重置或申請提高額度。",
         "error.http": "請求失敗（HTTP {code}）{detail}",
 
         // 小工具（跟隨系統語言）
