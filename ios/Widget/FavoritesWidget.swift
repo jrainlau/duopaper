@@ -1,3 +1,4 @@
+import AppIntents
 import ImageIO
 import SwiftUI
 import WidgetKit
@@ -19,19 +20,22 @@ private enum WidgetL10n {
     private static let enTable = [
         "widget.emptyPrompt": "Favorite some photos and they’ll rotate here",
         "widget.configName": "Favorites Carousel",
-        "widget.configDesc": "Rotate through your favorite photos; tap to open Favorites in Duopaper.",
+        "widget.configDesc": "Rotate through your favorite photos; tap to show another one.",
+        "widget.nextPhoto": "Next photo",
     ]
 
     private static let hansTable = [
         "widget.emptyPrompt": "收藏几张图片，这里会轮播",
         "widget.configName": "收藏轮播",
-        "widget.configDesc": "轮播你收藏的图片，点一下回到 Duopaper 的收藏。",
+        "widget.configDesc": "轮播你收藏的图片，点一下随机换一张。",
+        "widget.nextPhoto": "换一张",
     ]
 
     private static let hantTable = [
         "widget.emptyPrompt": "收藏幾張圖片，這裡會輪播",
         "widget.configName": "收藏輪播",
-        "widget.configDesc": "輪播你收藏的圖片，點一下回到 Duopaper 的收藏。",
+        "widget.configDesc": "輪播你收藏的圖片，點一下隨機換一張。",
+        "widget.nextPhoto": "換一張",
     ]
 }
 
@@ -72,71 +76,14 @@ enum WidgetImage {
     }
 }
 
-/// 「洗牌袋」伪随机：remaining 是本轮还没播的，played 是本轮已播的。
-/// 每次从 remaining 里取一张放进 played；remaining 空了就整体换过来（重新洗牌）开下一轮。
-/// 状态持久化，收藏增删时会增量调整而不是重新洗牌。
-private enum ShuffleBag {
-    private struct State: Codable {
-        var remaining: [String] = []
-        var played: [String] = []
-        var last: String?
-    }
-
-    private static let key = "widgetShuffleBag"
-
-    static func draw(_ count: Int, from pool: [WidgetShared.Item]) -> [WidgetShared.Item] {
-        let byID = Dictionary(pool.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
-        var state = load()
-
-        // 与当前收藏对齐：删掉已不存在的，新增的随机插进本轮剩余里。
-        state.remaining = state.remaining.filter { byID[$0] != nil }
-        state.played = state.played.filter { byID[$0] != nil }
-        let known = Set(state.remaining).union(state.played)
-        for id in byID.keys where !known.contains(id) {
-            state.remaining.insert(id, at: Int.random(in: 0...state.remaining.count))
-        }
-
-        var result: [WidgetShared.Item] = []
-        while result.count < count {
-            if state.remaining.isEmpty {
-                state.remaining = state.played.shuffled()
-                state.played = []
-                // 新一轮的第一张不能和上一轮最后一张相同。
-                if state.remaining.count > 1, state.remaining.first == state.last {
-                    state.remaining.swapAt(0, Int.random(in: 1..<state.remaining.count))
-                }
-            }
-            guard !state.remaining.isEmpty else { break }
-            let id = state.remaining.removeFirst()
-            state.played.append(id)
-            state.last = id
-            if let item = byID[id] { result.append(item) }
-        }
-        save(state)
-        return result
-    }
-
-    private static func load() -> State {
-        guard let data = WidgetShared.defaults?.data(forKey: key),
-              let state = try? JSONDecoder().decode(State.self, from: data) else {
-            return State()
-        }
-        return state
-    }
-
-    private static func save(_ state: State) {
-        guard let data = try? JSONEncoder().encode(state) else { return }
-        WidgetShared.defaults?.set(data, forKey: key)
-    }
-}
-
 struct FavoritesProvider: TimelineProvider {
     func placeholder(in context: Context) -> FavoriteEntry {
         FavoriteEntry(date: .now, item: nil, hasFavorites: true)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (FavoriteEntry) -> Void) {
-        let pool = Self.pool()
+        let pool = WidgetShared.carouselPool()
+        // 只是小组件库 / 占位预览，纯随机即可，不消耗洗牌袋进度。
         let item = pool.randomElement()
         let pixel = CGSize(width: context.displaySize.width * 2.5, height: context.displaySize.height * 2.5)
         let image = item.flatMap { WidgetShared.thumbURL(for: $0.id) }.flatMap { WidgetImage.load($0, cover: pixel) }
@@ -144,10 +91,10 @@ struct FavoritesProvider: TimelineProvider {
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<FavoriteEntry>) -> Void) {
-        let pool = Self.pool()
+        let pool = WidgetShared.carouselPool()
         let now = Date()
 
-        // 兜底 1：没有任何收藏（或 App Group 不可用）→ 显示提示，15 分钟后再看一眼。
+        // 兜底：没有任何收藏（或 App Group 不可用）→ 显示提示，15 分钟后再看一眼。
         guard !pool.isEmpty else {
             let entry = FavoriteEntry(date: now, item: nil, hasFavorites: false)
             completion(Timeline(entries: [entry], policy: .after(now.addingTimeInterval(900))))
@@ -156,14 +103,21 @@ struct FavoritesProvider: TimelineProvider {
 
         let interval = WidgetShared.interval
         // 一次生成一小批未来条目：系统按时间自动切换，批次用完后再重新生成。
+        // 间隔下限见 WidgetShared.minimumInterval，12 条可覆盖 3~24 小时，期间不消耗后台刷新额度。
         // 条目数要少：每个条目的渲染结果都会被预先存档，上百个条目会在真机上撑爆内存，小组件只剩空框。
         let count = 12
         let displaySize = context.displaySize
         let pixel = CGSize(width: displaySize.width * 2.5, height: displaySize.height * 2.5)
 
-        // 伪随机：顺序是随机的，但每一轮里每张图只出现一次，播完才开下一轮。
-        // 进度持久化在 App Group 里，跨多次 getTimeline 延续，所以不会因为重新生成时间线而重复。
-        let sequence = ShuffleBag.draw(count, from: pool)
+        // 点击换图：把按钮从洗牌袋抽到的那张放到新时间线首张，其余继续按袋排。
+        // Button(intent:) 结束后系统保证 reload 时间线，所以点一次只推进一张，且不会纯随机重复。
+        let tappedID = ShuffleBag.consumePendingTap()
+        let tapped = tappedID.flatMap { id in pool.first { $0.id == id } }
+        var sequence = (tapped.map { [$0] } ?? []) + ShuffleBag.draw(count - (tapped == nil ? 0 : 1), from: pool)
+        // 兜底补齐，避免条目索引越界（pool 非空时理论上不会走到）。
+        if sequence.count < count {
+            sequence += ShuffleBag.draw(count - sequence.count, from: pool)
+        }
 
         var decoded: [String: UIImage] = [:]
         func image(for item: WidgetShared.Item) -> UIImage? {
@@ -172,18 +126,10 @@ struct FavoritesProvider: TimelineProvider {
             decoded[item.id] = img
             return img
         }
-        let entries = (0..<count).map { i in
-            FavoriteEntry(date: now.addingTimeInterval(Double(i) * interval), item: sequence[i], hasFavorites: true, image: image(for: sequence[i]))
+        let entries = sequence.prefix(count).enumerated().map { i, item in
+            FavoriteEntry(date: now.addingTimeInterval(Double(i) * interval), item: item, hasFavorites: true, image: image(for: item))
         }
-        let end = now.addingTimeInterval(Double(count) * interval)
-        completion(Timeline(entries: entries, policy: .after(end)))
-    }
-
-    /// 优先只用「缩略图文件还在」的收藏；一张都没有时退回到用主色块占位，小组件也不会空白。
-    private static func pool() -> [WidgetShared.Item] {
-        let all = WidgetShared.loadManifest()
-        let withThumb = all.filter { WidgetShared.thumbURL(for: $0.id) != nil }
-        return withThumb.isEmpty ? all : withThumb
+        completion(Timeline(entries: entries, policy: .atEnd))
     }
 }
 
@@ -191,11 +137,20 @@ struct FavoritesWidgetView: View {
     let entry: FavoriteEntry
 
     var body: some View {
-        content
-            .widgetURL(WidgetShared.deepLink)
-            // 图片放在内容层而不是容器背景里：iOS 26 的「清透 / 玻璃」主屏样式会把容器背景
-            // 整个替换成玻璃，放在背景里的图片会被抹掉，只剩一个空框。
-            .containerBackground(for: .widget) { backdrop }
+        ZStack {
+            if entry.hasFavorites {
+                Button(intent: NextPhotoIntent()) {
+                    content
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(WidgetL10n.t("widget.nextPhoto"))
+            } else {
+                content
+            }
+        }
+        // 图片放在内容层而不是容器背景里：iOS 26 的「清透 / 玻璃」主屏样式会把容器背景
+        // 整个替换成玻璃，放在背景里的图片会被抹掉，只剩一个空框。
+        .containerBackground(for: .widget) { backdrop }
     }
 
     @ViewBuilder
@@ -217,6 +172,7 @@ struct FavoritesWidgetView: View {
                 if let image = entry.image {
                     Image(uiImage: image)
                         .resizable()
+                        .renderingMode(.original)
                         // 着色 / 清透样式下系统会把内容染成单色，要求保留原图颜色。
                         .widgetAccentedRenderingMode(.fullColor)
                         .scaledToFill()
@@ -229,7 +185,7 @@ struct FavoritesWidgetView: View {
             .transition(.opacity)
             .contentTransition(.opacity)
             .animation(.easeInOut(duration: 0.8), value: item.id)
-            // 署名：小组件里只有整块 widgetURL 能点，所以这里是文字署名。
+            // 署名：整块是换图按钮，所以这里只放文字，不放可点的链接。
             .overlay(alignment: .bottomLeading) {
                 Text("\(item.user) / Unsplash")
                     .font(.system(size: 10, weight: .medium))

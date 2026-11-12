@@ -27,7 +27,7 @@ struct RootView: View {
                     }
             }
         }
-        // 小组件点击：duopaper://favorites 直接回到收藏页。
+        // 外部 URL scheme 入口：duopaper://favorites 回到收藏页（小组件点击已改为换图）。
         .onOpenURL { url in
             guard url.scheme == "duopaper", url.host == "favorites" else { return }
             viewer.close()

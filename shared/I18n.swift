@@ -221,7 +221,7 @@ enum L10n {
         "widget.thumbsValue": "{shown} / {total} photos",
         "widget.syncNow": "Sync Now",
         "widget.status": "Status",
-        "widget.statusFooterOk": "Favoriting an image also saves a very small thumbnail for the widget (tens of KB each). Tapping the widget opens Favorites directly.",
+        "widget.statusFooterOk": "Favoriting an image also saves a very small thumbnail for the widget (tens of KB each). Tap the widget to show another favorite from the shuffle bag.",
         "widget.statusFooterBad": "App Group unavailable: enable the same App Group (group.com.jrainlau.duopaper) for both the Duopaper and DuopaperWidgetExtension targets in Xcode’s Signing & Capabilities.",
         "widget.intervalMinutes": "{n} min",
         "widget.intervalHours": "{n} hr",
@@ -249,7 +249,7 @@ enum L10n {
         // 小组件（跟随系统语言）
         "widget.emptyPrompt": "Favorite some photos and they’ll rotate here",
         "widget.configName": "Favorites Carousel",
-        "widget.configDesc": "Rotate through your favorite photos; tap to open Favorites in Duopaper.",
+        "widget.configDesc": "Rotate through your favorite photos; tap to show another one.",
     ]
 
     static let zhHansTable: [String: String] = [
@@ -376,7 +376,7 @@ enum L10n {
         "widget.thumbsValue": "{shown} / {total} 张",
         "widget.syncNow": "立即同步",
         "widget.status": "状态",
-        "widget.statusFooterOk": "收藏图片时会自动保存一份很小的缩略图给小组件使用（每张约几十 KB）。点击小组件会直接打开收藏页。",
+        "widget.statusFooterOk": "收藏图片时会自动保存一份很小的缩略图给小组件使用（每张约几十 KB）。点击小组件会按洗牌袋随机换一张。",
         "widget.statusFooterBad": "App Group 不可用：请在 Xcode 的 Signing & Capabilities 里为 Duopaper 和 DuopaperWidgetExtension 两个 target 开启同一个 App Group（group.com.jrainlau.duopaper）。",
         "widget.intervalMinutes": "{n} 分钟",
         "widget.intervalHours": "{n} 小时",
@@ -404,7 +404,7 @@ enum L10n {
         // 小组件（跟随系统语言）
         "widget.emptyPrompt": "收藏几张图片，这里会轮播",
         "widget.configName": "收藏轮播",
-        "widget.configDesc": "轮播你收藏的图片，点一下回到 Duopaper 的收藏。",
+        "widget.configDesc": "轮播你收藏的图片，点一下随机换一张。",
     ]
 
     static let zhHantTable: [String: String] = [
@@ -531,7 +531,7 @@ enum L10n {
         "widget.thumbsValue": "{shown} / {total} 張",
         "widget.syncNow": "立即同步",
         "widget.status": "狀態",
-        "widget.statusFooterOk": "收藏圖片時會自動保存一份很小的縮圖給小工具使用（每張約幾十 KB）。點擊小工具會直接打開收藏頁。",
+        "widget.statusFooterOk": "收藏圖片時會自動保存一份很小的縮圖給小工具使用（每張約幾十 KB）。點擊小工具會按洗牌袋隨機換一張。",
         "widget.statusFooterBad": "App Group 不可用：請在 Xcode 的 Signing & Capabilities 裡為 Duopaper 和 DuopaperWidgetExtension 兩個 target 開啟同一個 App Group（group.com.jrainlau.duopaper）。",
         "widget.intervalMinutes": "{n} 分鐘",
         "widget.intervalHours": "{n} 小時",
@@ -559,6 +559,6 @@ enum L10n {
         // 小工具（跟隨系統語言）
         "widget.emptyPrompt": "收藏幾張圖片，這裡會輪播",
         "widget.configName": "收藏輪播",
-        "widget.configDesc": "輪播你收藏的圖片，點一下回到 Duopaper 的收藏。",
+        "widget.configDesc": "輪播你收藏的圖片，點一下隨機換一張。",
     ]
 }

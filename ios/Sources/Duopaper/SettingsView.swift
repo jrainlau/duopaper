@@ -215,12 +215,13 @@ private struct WidgetSettingsView: View {
     @State private var status = WidgetSync.status()
     @State private var syncing = false
 
+    // WidgetKit 有最小刷新间隔和每日刷新预算，分钟级档位在真机上不生效。
+    // 最短档取 15 分钟：12 个条目能覆盖 3 小时，期间无需依赖会被节流的后台刷新。
     private let options: [(title: String, seconds: TimeInterval)] = [
-        (L("widget.intervalMinutes", ["n": "1"]), 60),
-        (L("widget.intervalMinutes", ["n": "5"]), 300),
         (L("widget.intervalMinutes", ["n": "15"]), 900),
         (L("widget.intervalMinutes", ["n": "30"]), 1800),
         (L("widget.intervalHours", ["n": "1"]), 3600),
+        (L("widget.intervalHours", ["n": "2"]), 7200),
     ]
 
     var body: some View {
