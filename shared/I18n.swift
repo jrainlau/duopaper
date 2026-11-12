@@ -74,6 +74,14 @@ func L(_ key: String, _ params: [String: String]) -> String {
     return text
 }
 
+/// 渲染含 Markdown（如 `[文本](链接)`）的文案：解析成可点击链接；失败时回退纯文本。
+func Lmd(_ key: String) -> Text {
+    if let attr = try? AttributedString(markdown: L(key), options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)) {
+        return Text(attr)
+    }
+    return Text(L(key))
+}
+
 // MARK: - 文案表
 
 enum L10n {

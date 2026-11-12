@@ -90,7 +90,7 @@ private struct KeySettingsView: View {
             } header: {
                 Text("Access Key")
             } footer: {
-                Text(L("key.footer"))
+                Lmd("key.footer")
             }
             if !accessKey.isEmpty {
                 Section {
