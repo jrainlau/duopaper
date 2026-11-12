@@ -17,11 +17,13 @@ struct RootView: View {
                 .disabled(viewer.photo != nil)
 
             if let photo = viewer.photo {
-                ViewerOverlay(photo: photo) { viewer.photo = nil }
-                    .transition(.opacity.combined(with: .scale(scale: 0.97)))
+                ViewerDim { viewer.close() }
+                ViewerOverlay(photo: photo, shown: viewer.shown) { viewer.close() }
+                    .onAppear {
+                        withAnimation(.smooth(duration: 0.38)) { viewer.shown = true }
+                    }
             }
         }
-        .animation(.spring(duration: 0.35), value: viewer.photo?.id)
     }
 
     private var tabs: some View {

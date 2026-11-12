@@ -22,7 +22,7 @@ struct PhotoGridView: View {
             PhotoCard(
                 photo: photo,
                 isFavorite: favorites.contains(photo),
-                onOpen: { viewer.photo = photo },
+                onOpen: { viewer.open(photo) },
                 onToggleFavorite: { favorites.toggle(photo) }
             )
             .onAppear { if tail.contains(photo.id) { onNearEnd?() } }

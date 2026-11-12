@@ -2,45 +2,74 @@ import Observation
 import Photos
 import SwiftUI
 
-/// 当前正在预览的图片。放在根视图的浮层里展示，这样蒙层能盖住 Tab 栏和工具栏。
+/// 当前正在预览的图片，以及展开 / 收起的进度。
+/// 蒙层和卡片是两层：蒙层随 `photo` 瞬间出现 / 消失，卡片只用 `shown` 驱动缩放和透明度。
 @MainActor
 @Observable
 final class ViewerState {
     var photo: Photo?
+    var shown = false
+    private var closing = false
+
+    func open(_ photo: Photo) {
+        guard self.photo == nil else { return }
+        closing = false
+        shown = false
+        self.photo = photo
+    }
+
+    func close() {
+        guard photo != nil, !closing else { return }
+        closing = true
+        withAnimation(.easeIn(duration: 0.16)) { shown = false }
+        Task {
+            try? await Task.sleep(for: .milliseconds(170))
+            photo = nil
+            closing = false
+        }
+    }
 }
 
-/// 预览浮层：半透明黑色蒙层 + 宽度贴合原图的卡片，原图下方留一条工具栏放按钮。
-/// 点蒙层关闭。
+/// 蒙层：没有任何动画，点击立即开始关闭。
+struct ViewerDim: View {
+    let onTap: () -> Void
+
+    var body: some View {
+        Color.black.opacity(0.5)
+            .ignoresSafeArea()
+            .contentShape(Rectangle())
+            .onTapGesture(perform: onTap)
+            .accessibilityAddTraits(.isButton)
+            .accessibilityLabel("关闭预览")
+    }
+}
+
+/// 预览卡片：宽度贴合原图，原图下方留一条工具栏放按钮。
+/// 展开只做一件事：用同一条平滑曲线同时改缩放和透明度，不动布局，所以全程没有速度突变。
 struct ViewerOverlay: View {
     let photo: Photo
+    let shown: Bool
     let onClose: () -> Void
 
     var body: some View {
-        ZStack {
-            Color.black.opacity(0.5)
-                .ignoresSafeArea()
-                .contentShape(Rectangle())
-                .onTapGesture(perform: onClose)
-                .accessibilityAddTraits(.isButton)
-                .accessibilityLabel("关闭预览")
+        GeometryReader { geo in
+            let barHeight: CGFloat = 60
+            let hMargin: CGFloat = 16
+            // 上下取两端安全区的较大值做对称边距，卡片才会真正垂直居中。
+            let vMargin = max(16, geo.safeAreaInsets.top, geo.safeAreaInsets.bottom)
+            let ratio = CGFloat(photo.width) / CGFloat(photo.height)
+            let maxWidth = geo.size.width - hMargin * 2
+            let maxImageHeight = geo.size.height - vMargin * 2 - barHeight
+            let imageWidth = max(1, min(maxWidth, maxImageHeight * ratio))
+            let cardWidth = max(imageWidth, min(maxWidth, 340))
 
-            GeometryReader { geo in
-                let barHeight: CGFloat = 60
-                let hMargin: CGFloat = 16
-                // 上下取两端安全区的较大值做对称边距，卡片才会真正垂直居中。
-                let vMargin = max(16, geo.safeAreaInsets.top, geo.safeAreaInsets.bottom)
-                let ratio = CGFloat(photo.width) / CGFloat(photo.height)
-                let maxWidth = geo.size.width - hMargin * 2
-                let maxImageHeight = geo.size.height - vMargin * 2 - barHeight
-                let imageWidth = max(1, min(maxWidth, maxImageHeight * ratio))
-                let cardWidth = max(imageWidth, min(maxWidth, 340))
-
-                ViewerCard(photo: photo, imageWidth: imageWidth, imageHeight: imageWidth / ratio, barHeight: barHeight, onClose: onClose)
-                    .frame(width: cardWidth)
-                    .position(x: geo.size.width / 2, y: geo.size.height / 2)
-            }
-            .ignoresSafeArea(.container, edges: .vertical)
+            ViewerCard(photo: photo, imageWidth: imageWidth, imageHeight: imageWidth / ratio, barHeight: barHeight, onClose: onClose)
+                .frame(width: cardWidth)
+                .scaleEffect(shown ? 1 : 0.9)
+                .opacity(shown ? 1 : 0)
+                .position(x: geo.size.width / 2, y: geo.size.height / 2)
         }
+        .ignoresSafeArea(.container, edges: .vertical)
     }
 }
 
@@ -95,7 +124,7 @@ private struct ViewerCard: View {
         .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         .shadow(color: .black.opacity(0.35), radius: 30, y: 10)
-        .animation(.spring(duration: 0.35), value: toast)
+        .animation(.smooth(duration: 0.25), value: toast)
     }
 
     private var bar: some View {
