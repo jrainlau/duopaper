@@ -20,7 +20,9 @@ struct SettingsView: View {
                     Image(systemName: section.symbol).foregroundStyle(section.tint)
                 }
                 .tag(section)
+                .appRows()
             }
+            .appPage()
             .navigationTitle("设置")
         } detail: {
             if let selection {
@@ -86,14 +88,17 @@ private struct KeySettingsView: View {
             } footer: {
                 Text("到 [Unsplash Developers](https://unsplash.com/developers) 免费创建应用，复制 Access Key（不是 Secret Key）。Demo 应用限额 50 次 / 小时。密钥只保存在本机，只发送给 api.unsplash.com。保存时会先用一个最轻的接口验证，通过后才会保存并回到首页。")
             }
+            .appRows()
 
             if !accessKey.isEmpty {
                 Section {
-                    Label("已配置", systemImage: "checkmark.seal.fill").foregroundStyle(.green)
+                    Label("已配置", systemImage: "checkmark.seal.fill").foregroundStyle(Color.appSuccess)
                     Button("清除密钥", role: .destructive) { accessKey = "" }
                 }
+                .appRows()
             }
         }
+        .appPage()
         .alert("验证失败", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
             Button("好") {}
         } message: {
@@ -139,10 +144,13 @@ private struct HistorySettingsView: View {
                     } footer: {
                         Text("点右上角「编辑」可以拖动排序；左滑可以删除。排在前面的会先出现在分类菜单里。")
                     }
+                    .appRows()
                     Section {
                         Button("清空全部历史", role: .destructive) { history.removeAll() }
                     }
+                    .appRows()
                 }
+                .appPage()
             }
         }
         .toolbar {
@@ -169,7 +177,9 @@ private struct DownloadSettingsView: View {
             } footer: {
                 Text("预览里也可以随时切换。图片会保存到系统相册，首次保存需要允许写入相册。")
             }
+            .appRows()
         }
+        .appPage()
     }
 }
 
@@ -202,11 +212,12 @@ private struct WidgetSettingsView: View {
             } footer: {
                 Text("小组件会渐隐渐显地轮播收藏里的图片；桌面上有多个小组件时，各自随机、互不同步。系统对小组件刷新有节流，实际切换时间可能略有偏差。")
             }
+            .appRows()
 
             Section {
                 LabeledContent("数据通道") {
                     Label(status.groupAvailable ? "正常" : "不可用", systemImage: status.groupAvailable ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-                        .foregroundStyle(status.groupAvailable ? .green : .orange)
+                        .foregroundStyle(status.groupAvailable ? Color.appSuccess : Color.appWarning)
                 }
                 LabeledContent("小组件缩略图", value: "\(status.thumbs) / \(favorites.photos.count) 张")
                 Button {
@@ -230,7 +241,9 @@ private struct WidgetSettingsView: View {
                     ? "收藏图片时会自动保存一份很小的缩略图给小组件使用（每张约几十 KB）。点击小组件会直接打开收藏页。"
                     : "App Group 不可用：请在 Xcode 的 Signing & Capabilities 里为 Duopaper 和 DuopaperWidgetExtension 两个 target 开启同一个 App Group（group.com.jrainlau.duopaper）。")
             }
+            .appRows()
         }
+        .appPage()
         .onAppear { status = WidgetSync.status() }
     }
 }
@@ -253,7 +266,9 @@ private struct CacheSettingsView: View {
             } footer: {
                 Text(cleared ? "已清除。" : "会清除浏览过的图片、App 里的缩略图和接口缓存（接口结果缓存 6 小时，节省每小时 50 次的额度）。\n\n你收藏的图片的小组件专用缩略图单独保存，不属于缓存，清除后小组件仍能正常显示；收藏页里的图片会重新联网加载。")
             }
+            .appRows()
         }
+        .appPage()
     }
 }
 
@@ -270,12 +285,15 @@ private struct AboutSettingsView: View {
             Section {
                 LabeledContent("版本", value: version)
             }
+            .appRows()
             Section {
                 Link("Unsplash License", destination: URL(string: "https://unsplash.com/license")!)
                 Link("Unsplash API 使用规范", destination: URL(string: "https://help.unsplash.com/en/articles/2511245-unsplash-api-guidelines")!)
             } footer: {
                 Text("图片来自 Unsplash 及其摄影师，请遵守相关许可与规范。")
             }
+            .appRows()
         }
+        .appPage()
     }
 }

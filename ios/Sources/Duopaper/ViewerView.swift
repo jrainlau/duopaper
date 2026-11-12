@@ -159,6 +159,7 @@ private struct ViewerCard: View {
                     if downloading { ProgressView() } else { Image(systemName: "arrow.down.circle") }
                 }
                 .frame(width: 22, height: 22)
+                .foregroundStyle(Color.appOnPrimary)
             }
             .buttonStyle(.glassProminent)
             .disabled(downloading)

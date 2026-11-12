@@ -20,7 +20,7 @@
 
 ## 其他约定
 
-- macOS 图标源自 `web/wallpaper-h5-icons/app/app-icon-1024.png`，改了源图后执行 `bash macos/scripts/make-icon.sh` 重新生成 `macos/Sources/Duopaper/AppIcon.icns`（需要 Pillow）并提交。
+- 主题色与图标统一放在 `design/`，改完执行 `bash design/sync.sh` 同步到 `shared/`、`web/`、`ios/`、`macos/`（不要直接改同步出来的副本）。原先的 `make-icon.sh` 已删除。
 - iOS：`ios/Duopaper.xcodeproj`，设计遵循 Apple HIG 的 iPhone Duo 章节（按尺寸类布局、不假设设备型号、系统控件自动适配侧边工具栏、折叠屏偶数列）。命令行构建模拟器版：`xcodebuild -project ios/Duopaper.xcodeproj -scheme Duopaper -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build`（沙箱内需加 `-IDEPackageSupportDisableManifestSandbox=1 OTHER_SWIFT_FLAGS=-disable-sandbox`）。
 - iOS 小组件：`ios/Widget`（WidgetKit 扩展，小 + 中两个尺寸，轮播收藏）；App 与小组件通过 App Group `group.com.jrainlau.duopaper` 共享 `ios/WidgetShared/WidgetShared.swift` 里定义的目录和清单。收藏时 `ios/Sources/Duopaper/WidgetSync.swift` 会下载 800px 小缩略图到共享目录；清除缓存（`shared/CacheTools.swift`）不会删它们。点小组件通过 `duopaper://favorites` 回到收藏页。真机需要在 Signing & Capabilities 给两个 target 开同一个 App Group。
 - 刷新策略：列表只允许手动刷新（顶栏刷新按钮 / 下拉 / 换分类、搜索、方向、密钥这类明确操作）。不要用 `.task(id:)` 加载列表，它会在切 Tab 回来时重新执行；iOS 的 `DiscoverView` 用 `onChange` + 首次 `onAppear` 触发加载。

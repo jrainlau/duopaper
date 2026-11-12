@@ -12,6 +12,7 @@ struct FavoritesView: View {
                     PhotoGridView(photos: favorites.photos)
                 }
             }
+            .background(Color.appBackground)
             .navigationTitle("收藏")
             .navigationBarTitleDisplayMode(.inline)
         }

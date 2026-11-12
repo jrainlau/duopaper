@@ -89,6 +89,7 @@ struct ContentView: View {
             .navigationSplitViewColumnWidth(min: 160, ideal: 190, max: 260)
         } detail: {
             detail
+                .background(Color.appBackground)
                 .navigationTitle(title)
                 .navigationSubtitle(subtitle)
         }
@@ -162,7 +163,7 @@ struct ContentView: View {
                 } description: {
                     Text("填入你的 Unsplash Access Key 后即可开始取片。")
                 } actions: {
-                    Button("打开设置") { openSettings() }.buttonStyle(.borderedProminent)
+                    Button { openSettings() } label: { Text("打开设置").foregroundStyle(Color.appOnPrimary) }.buttonStyle(.borderedProminent)
                 }
             case .idle, .loading:
                 ProgressView("正在取片…").frame(maxWidth: .infinity, maxHeight: .infinity)

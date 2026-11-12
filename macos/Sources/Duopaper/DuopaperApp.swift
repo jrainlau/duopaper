@@ -15,6 +15,7 @@ struct DuopaperApp: App {
             ContentView()
                 .environment(favorites)
                 .environment(history)
+                .tint(Color.appPrimary)
                 .frame(minWidth: 760, minHeight: 520)
         }
         .defaultSize(width: 1100, height: 760)
@@ -22,6 +23,7 @@ struct DuopaperApp: App {
 
         Settings {
             SettingsView()
+                .tint(Color.appPrimary)
                 .environment(history)
         }
     }

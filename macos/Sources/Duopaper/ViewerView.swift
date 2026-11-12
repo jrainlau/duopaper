@@ -87,6 +87,8 @@ struct ViewerView: View {
                 }
             }
             .buttonStyle(.borderedProminent)
+            .tint(Color.appPrimary)
+            .foregroundStyle(Color.appOnPrimary)
             .controlSize(.large)
             .disabled(downloading)
         }

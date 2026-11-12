@@ -1,24 +1,28 @@
-/* duopaper — design tokens (ui-ux-pro-max) */
+@import './theme.css';
+
+/* duopaper — design tokens */
 :root {
-  color-scheme: dark;
+  color-scheme: light dark;
 
-  /* Surface: OLED-first, the photograph is the only source of colour */
-  --ink-900: #08090b;
-  --ink-800: #0d1014;
-  --ink-700: #13171d;
-  --ink-600: #1a1f27;
-  --line: #272d37;
-  --line-soft: #1b2028;
-  --paper: #f4f6f2;
-  --muted: #929aa7;
-  --faint: #5c6471;
+  /* 语义色全部来自 theme.css（由 design/sync.sh 从 design/theme 同步），自动跟随系统明暗。
+     下面这些是旧变量名到新主题的映射，样式里继续用旧名字。 */
+  --ink-900: var(--background);
+  --ink-800: var(--background);
+  --ink-700: var(--surface);
+  --ink-600: var(--surface-secondary);
+  --line: var(--separator);
+  --line-soft: var(--separator);
+  --paper: var(--text-primary);
+  --muted: var(--text-secondary);
+  --faint: var(--text-tertiary);
 
-  /* Single accent, used only for action / selection / numbering */
-  --lime: #c8ff4d;
-  --lime-ink: #0b1000;
-  --danger: #ff9b9b;
-  --warn: #f2c66d;
-  --ok: #9ee6b4;
+  /* 主色：用于操作 / 选中；--accent-text 用于主色文字，保证在浅色底上对比度足够 */
+  --lime: var(--primary);
+  --lime-ink: var(--on-primary);
+  --accent-text: var(--primary-text);
+  --danger: var(--error);
+  --warn: var(--warning);
+  --ok: var(--success);
 
   /* Type */
   --font-display: 'Newsreader', 'Iowan Old Style', 'Baskerville', Georgia, serif;

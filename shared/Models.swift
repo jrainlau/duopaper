@@ -106,7 +106,7 @@ struct Topic: Identifiable, Hashable {
     }
 
     static let all: [Topic] = [
-        .init(title: "精选", query: "wallpaper", symbol: "star", tint: .yellow),
+        .init(title: "精选", query: "wallpaper", symbol: "star", tint: Color.appPrimary),
         .init(title: "极简", query: "minimal", symbol: "circle.dashed", tint: .gray),
         .init(title: "秋日", query: "autumn", symbol: "leaf", tint: .orange),
         .init(title: "自然", query: "nature", symbol: "mountain.2", tint: .green),

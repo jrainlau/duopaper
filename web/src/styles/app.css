@@ -5,9 +5,9 @@ body {
   min-height: 100dvh;
   background-color: var(--ink-900);
   background-image:
-    radial-gradient(900px 520px at 8% -8%, rgba(200, 255, 77, .075), transparent 68%),
-    repeating-linear-gradient(0deg, transparent 0 63px, rgba(255, 255, 255, .018) 63px 64px),
-    repeating-linear-gradient(90deg, transparent 0 63px, rgba(255, 255, 255, .018) 63px 64px);
+    radial-gradient(900px 520px at 8% -8%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 68%),
+    repeating-linear-gradient(0deg, transparent 0 63px, color-mix(in srgb, var(--text-primary) 3%, transparent) 63px 64px),
+    repeating-linear-gradient(90deg, transparent 0 63px, color-mix(in srgb, var(--text-primary) 3%, transparent) 63px 64px);
   color: var(--paper);
   font: var(--t-md)/1.6 var(--font-ui);
   -webkit-font-smoothing: antialiased;
@@ -62,7 +62,7 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
   transition: color var(--dur) var(--ease);
 }
 .chip:hover { color: var(--paper); }
-.chip[aria-pressed="true"] { color: var(--lime); font-weight: 700; }
+.chip[aria-pressed="true"] { color: var(--accent-text); font-weight: 700; }
 .select {
   flex: none; padding: 4px 16px 4px 0;
   background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23929aa7' stroke-width='1.4'/%3E%3C/svg%3E") no-repeat right center;
@@ -70,14 +70,14 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
   font-size: var(--t-sm); font-weight: 500; color: var(--faint);
   -webkit-appearance: none; appearance: none;
 }
-.select:focus-visible { color: var(--lime); }
+.select:focus-visible { color: var(--accent-text); }
 
 /* ---------- 底部 sticky 工具条：分类 / 搜索 / 方向 / 尺寸 ---------- */
 .control-bar {
   position: fixed; z-index: 30; inset: auto 0 0 0;
   padding: 6px calc(var(--sar) + 10px) calc(var(--sab) + 6px) calc(var(--sal) + 10px);
   /* 不用 backdrop-filter：iOS 上 fixed 毛玻璃合成层在横竖屏切换/滚动时容易错位 */
-  background: rgba(11, 13, 17, .97);
+  background: color-mix(in srgb, var(--background) 97%, transparent);
   border-top: 1px solid var(--line);
 }
 .control-bar__topics {
@@ -104,7 +104,7 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
   background: none; border: 0; border-bottom: 1px solid transparent;
   transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease);
 }
-.control-bar__search:focus-within { border-bottom-color: var(--lime); color: var(--lime); }
+.control-bar__search:focus-within { border-bottom-color: var(--lime); color: var(--accent-text); }
 .control-bar__search input {
   width: 96px; border: 0; outline: none; background: transparent;
   font-size: 16px; color: var(--paper); /* iOS: 防止聚焦时自动缩放 */
@@ -121,7 +121,7 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
   font-size: var(--t-sm); font-weight: 500; color: var(--faint);
   white-space: nowrap; transition: color var(--dur) var(--ease);
 }
-.control-bar__action:hover { color: var(--lime); }
+.control-bar__action:hover { color: var(--accent-text); }
 .control-bar__status {
   margin-left: auto; flex: none; white-space: nowrap;
   font-size: var(--t-xs); color: var(--faint); font-variant-numeric: tabular-nums;
@@ -130,7 +130,7 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .control-bar__toast {
   position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%);
   max-width: min(520px, calc(100vw - 24px)); padding: 7px 12px;
-  border-radius: var(--r-sm); background: rgba(19, 23, 29, .92);
+  border-radius: var(--r-sm); background: color-mix(in srgb, var(--surface) 92%, transparent);
   color: var(--paper); font-size: var(--t-xs);
   box-shadow: var(--shadow-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
@@ -179,9 +179,9 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .card--skeleton:hover { transform: none; box-shadow: none; border-color: transparent; }
 .empty {
   padding: var(--sp-8) var(--sp-5); text-align: center;
-  border: 1px dashed var(--line); border-radius: var(--r-lg); background: rgba(19,23,29,.4);
+  border: 1px dashed var(--line); border-radius: var(--r-lg); background: color-mix(in srgb, var(--surface) 40%, transparent);
 }
-.empty__mark { display: flex; justify-content: center; color: var(--lime); }
+.empty__mark { display: flex; justify-content: center; color: var(--accent-text); }
 .empty__title { margin: var(--sp-4) 0 var(--sp-2); font: 400 var(--t-xl)/1.2 var(--font-display); }
 .empty__text { margin: 0; color: var(--muted); font-size: var(--t-sm); }
 .empty__action { margin-top: var(--sp-5); }
@@ -200,7 +200,7 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
   width: min(560px, calc(100vw - 32px));
   padding: var(--sp-5);
   border: 1px solid var(--line); border-radius: var(--r-lg);
-  background: rgba(19,23,29,.96);
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
   -webkit-backdrop-filter: blur(28px); backdrop-filter: blur(28px);
   box-shadow: var(--shadow-2);
   animation: sheet-in 320ms var(--ease) both;
@@ -214,6 +214,6 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
   flex: 1 1 260px; min-width: 0; padding: 11px 14px; font-size: 16px;
   background: var(--ink-900); border: 1px solid var(--line); border-radius: var(--r-pill); outline: none;
 }
-.sheet__row input:focus { border-color: rgba(200,255,77,.55); }
+.sheet__row input:focus { border-color: color-mix(in srgb, var(--primary) 55%, transparent); }
 .sheet__note { margin-top: var(--sp-3); font-size: var(--t-xs); color: var(--faint); }
 @keyframes sheet-in { from { opacity: 0; transform: translate(-50%, 18px); } to { opacity: 1; transform: translate(-50%, 0); } }

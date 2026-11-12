@@ -28,6 +28,7 @@ struct DiscoverView: View {
     var body: some View {
         NavigationStack {
             content
+                .background(Color.appBackground)
                 .navigationTitle(Topic.all.first { $0.query == query }?.title ?? query)
                 .navigationBarTitleDisplayMode(.inline)
                 .searchable(text: $searchText, prompt: "搜索")
@@ -112,8 +113,10 @@ struct DiscoverView: View {
             } description: {
                 Text(message)
             } actions: {
-                Button("重试") { refreshToken += 1 }
-                    .buttonStyle(.borderedProminent)
+                Button { refreshToken += 1 } label: {
+                    Text("重试").foregroundStyle(Color.appOnPrimary)
+                }
+                .buttonStyle(.borderedProminent)
             }
         case .ready where store.photos.isEmpty:
             ContentUnavailableView.search(text: query)

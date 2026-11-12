@@ -66,19 +66,32 @@ bash macos/scripts/build-app.sh --install  # 同时安装到 /Applications
 
 适配 iPhone Duo：只用标准 `TabView`、`NavigationStack` 与工具栏，按尺寸类而不是设备型号布局；瀑布流在折叠屏上用偶数列。
 
-## 改颜色与图标
+## 主题色与图标（design/）
 
-| 要改的 | 位置 |
-|---|---|
-| App 图标源图 | `web/wallpaper-h5-icons/app/app-icon-1024.png`（1024×1024） |
-| 重新生成 macOS 图标 | `bash macos/scripts/make-icon.sh`（需要 `pip3 install pillow`），输出 `macos/Sources/Duopaper/AppIcon.icns` |
-| 重新生成 iOS 图标 | `bash ios/scripts/make-icon.sh`，输出 `ios/Sources/Duopaper/Assets.xcassets/AppIcon.appiconset/AppIcon.png` |
-| iOS 强调色 | `ios/Sources/Duopaper/Assets.xcassets/AccentColor.colorset/Contents.json` |
-| macOS 强调色 | 默认跟随系统设置里的强调色，无需修改 |
-| 分类图标颜色 | `shared/Models.swift` 里 `Topic.all` 的 `tint` |
-| Web 配色 | `web/src/styles/tokens.css` |
+所有设计资源集中在 `design/`，三个端共用同一套：
 
-改完图标后重新构建并安装；iOS 桌面图标缓存有时需要删掉 App 重装才会更新。
+```
+design/
+  theme/    主题色：Colors.xcassets（Light / Dark）、Theme.swift、theme.css、tokens.json、preview.html（预览）
+  icons/
+    ios/    iOS 图标 1024
+    macos/  macOS 图标 AppIcon.icns + 1024 预览
+    web/    favicon / apple-touch-icon / PWA 图标
+    source/ 矢量源文件与原图
+  sync.sh   把上面的内容同步到各端
+```
+
+主色为紫色：Light `#7A3FD0`、Dark `#BD89E8`，完整色表见 `design/theme/tokens.json`。
+
+**改了 `design/` 里的颜色或图标之后：**
+
+```bash
+bash design/sync.sh
+```
+
+它会把主题色同步到 `shared/Colors.xcassets` + `shared/Theme.swift`（iOS / macOS）和 `web/src/styles/theme.css`（Web），并把图标覆盖到 iOS 的 `AppIcon.appiconset`、macOS 的 `AppIcon.icns`、Web 的 `public/`。然后重新构建：macOS 用 `bash macos/scripts/build-app.sh --install`，iOS 在 Xcode 里 ⌘R，Web 用 `cd web && npm run build`。iOS 桌面图标有缓存，不更新时删掉 App 重装。
+
+各端怎么用：iOS / macOS 的强调色来自 `Primary`（`ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME`），页面和分组背景用 `Color.appBackground` / `Color.appSurface`，主按钮文字用 `Color.appOnPrimary`；Web 在 `tokens.css` 里把旧变量名映射到 `theme.css`，自动跟随系统明暗。macOS 的系统强调色如果不是「多彩」，系统设置里选的颜色会覆盖侧边栏选中色。
 
 ## Web 开发（在 web/ 目录下）
 

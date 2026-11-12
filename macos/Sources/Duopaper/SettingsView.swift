@@ -70,11 +70,12 @@ private struct KeySettingsView: View {
             }
             if !accessKey.isEmpty {
                 Section {
-                    Label("已配置", systemImage: "checkmark.seal.fill").foregroundStyle(.green)
+                    Label("已配置", systemImage: "checkmark.seal.fill").foregroundStyle(Color.appSuccess)
                 }
             }
         }
         .formStyle(.grouped)
+        .appPage()
         .alert("验证失败", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
             Button("好") {}
         } message: {
@@ -173,6 +174,7 @@ private struct DownloadSettingsView: View {
             }
         }
         .formStyle(.grouped)
+        .appPage()
     }
 }
 
@@ -196,6 +198,7 @@ private struct CacheSettingsView: View {
             }
         }
         .formStyle(.grouped)
+        .appPage()
     }
 }
 
@@ -220,5 +223,6 @@ private struct AboutSettingsView: View {
             }
         }
         .formStyle(.grouped)
+        .appPage()
     }
 }
