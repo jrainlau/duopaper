@@ -59,6 +59,13 @@ struct UnsplashClient {
         return (result, false)
     }
 
+    /// 用最轻的接口（只取 1 张图的列表）校验 Access Key 是否可用，不拉瀑布流。
+    func validate() async throws {
+        var c = URLComponents(string: "https://api.unsplash.com/photos")!
+        c.queryItems = [.init(name: "per_page", value: "1")]
+        _ = try await fetch(c.url!)
+    }
+
     /// Unsplash API 规范：用户下载图片前需触发一次 download_location 计数。
     func trackDownload(_ photo: Photo) async {
         _ = try? await fetch(photo.links.downloadLocation)
@@ -105,6 +112,11 @@ enum PageCache {
     private static func file(_ name: String) -> URL {
         let safe = Data(name.utf8).base64EncodedString().replacingOccurrences(of: "/", with: "_")
         return dir.appendingPathComponent(safe + ".json")
+    }
+
+    static func clear() {
+        try? FileManager.default.removeItem(at: dir)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
     }
 
     static func read(_ name: String) -> SearchPage? {

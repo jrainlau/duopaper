@@ -33,7 +33,7 @@ struct RootView: View {
                 FavoritesView()
             }
             Tab("设置", systemImage: "gearshape", value: AppTab.settings) {
-                SettingsView()
+                SettingsView(onVerified: { tab = .discover })
             }
         }
         .tabViewStyle(.tabBarOnly)

@@ -26,17 +26,20 @@ struct ViewerOverlay: View {
 
             GeometryReader { geo in
                 let barHeight: CGFloat = 60
-                let margin: CGFloat = 16
+                let hMargin: CGFloat = 16
+                // 上下取两端安全区的较大值做对称边距，卡片才会真正垂直居中。
+                let vMargin = max(16, geo.safeAreaInsets.top, geo.safeAreaInsets.bottom)
                 let ratio = CGFloat(photo.width) / CGFloat(photo.height)
-                let maxWidth = geo.size.width - margin * 2
-                let maxImageHeight = geo.size.height - margin * 2 - barHeight
+                let maxWidth = geo.size.width - hMargin * 2
+                let maxImageHeight = geo.size.height - vMargin * 2 - barHeight
                 let imageWidth = max(1, min(maxWidth, maxImageHeight * ratio))
                 let cardWidth = max(imageWidth, min(maxWidth, 340))
 
-                ViewerCard(photo: photo, imageWidth: imageWidth, imageHeight: imageWidth / ratio, barHeight: barHeight)
+                ViewerCard(photo: photo, imageWidth: imageWidth, imageHeight: imageWidth / ratio, barHeight: barHeight, onClose: onClose)
                     .frame(width: cardWidth)
                     .position(x: geo.size.width / 2, y: geo.size.height / 2)
             }
+            .ignoresSafeArea(.container, edges: .vertical)
         }
     }
 }
@@ -46,6 +49,7 @@ private struct ViewerCard: View {
     let imageWidth: CGFloat
     let imageHeight: CGFloat
     let barHeight: CGFloat
+    let onClose: () -> Void
 
     @AppStorage("accessKey") private var accessKey = ""
     @AppStorage("downloadSize") private var sizeRaw = DownloadSize.standard.rawValue
@@ -65,6 +69,14 @@ private struct ViewerCard: View {
             }
             .frame(width: imageWidth, height: imageHeight)
             .clipped()
+            .overlay(alignment: .topTrailing) {
+                Button(action: onClose) {
+                    Image(systemName: "xmark").frame(width: 22, height: 22)
+                }
+                .buttonStyle(.glass)
+                .padding(12)
+                .accessibilityLabel("关闭")
+            }
             .overlay(alignment: .top) {
                 if let toast {
                     Text(toast)
@@ -72,7 +84,7 @@ private struct ViewerCard: View {
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
                         .glassEffect()
-                        .padding(.top, 10)
+                        .padding(.top, 14)
                         .transition(.move(edge: .top).combined(with: .opacity))
                 }
             }

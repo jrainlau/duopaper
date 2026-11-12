@@ -5,9 +5,15 @@ struct DiscoverView: View {
     @AppStorage("query") private var query = "wallpaper"
     @AppStorage("orientation") private var orientationRaw = ""
 
+    @Environment(SearchHistoryStore.self) private var history
     @State private var store = WallpaperStore()
     @State private var searchText = ""
     @State private var refreshToken = 0
+
+    /// 菜单里固定只保留这三个分类，其余靠搜索，搜过的词进入「历史搜索」。
+    private static let pinned: [Topic] = ["wallpaper", "nature", "street photography"].compactMap { q in
+        Topic.all.first { $0.query == q }
+    }
 
     private var topicBinding: Binding<String> {
         Binding(
@@ -32,14 +38,26 @@ struct DiscoverView: View {
                 .onSubmit(of: .search) {
                     let q = searchText.trimmingCharacters(in: .whitespaces)
                     query = q.isEmpty ? "wallpaper" : q
+                    if !q.isEmpty && !Self.pinned.contains(where: { $0.query == q.lowercased() }) { history.add(q) }
                     refreshToken += 1
                 }
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
                         Menu {
                             Picker("分类", selection: topicBinding) {
-                                ForEach(Topic.all) { topic in
+                                ForEach(Self.pinned) { topic in
                                     Label(topic.title, systemImage: topic.symbol).tag(topic.query)
+                                }
+                            }
+                            .pickerStyle(.inline)
+                            if !history.items.isEmpty {
+                                Section("历史搜索") {
+                                    Picker("历史搜索", selection: topicBinding) {
+                                        ForEach(history.items, id: \.self) { item in
+                                            Label(item, systemImage: "clock.arrow.circlepath").tag(item)
+                                        }
+                                    }
+                                    .pickerStyle(.inline)
                                 }
                             }
                         } label: {
