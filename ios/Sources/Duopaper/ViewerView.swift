@@ -176,7 +176,7 @@ private struct ViewerCard: View {
                 let file = try await WallpaperStore.download(photo, size: size, key: accessKey, into: FileManager.default.temporaryDirectory)
                 defer { try? FileManager.default.removeItem(at: file) }
                 try await saveToPhotos(file)
-                show("已保存到相册")
+                show("已保存到相册「\(Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "Duopaper")」")
             } catch {
                 show("保存失败：\(error.localizedDescription)")
             }
@@ -191,13 +191,36 @@ private struct ViewerCard: View {
         }
     }
 
+    /// 保存到名为「Duopaper」（App 名）的相册，没有就新建。
+    /// 查找已有相册需要读权限；只给了「仅添加」权限时退回到直接存进「最近项目」。
     private func saveToPhotos(_ file: URL) async throws {
-        let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
-        guard status == .authorized || status == .limited else {
-            throw NSError(domain: "Duopaper", code: 1, userInfo: [NSLocalizedDescriptionKey: "没有相册写入权限，请在系统设置中允许。"])
+        let albumName = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "Duopaper"
+
+        var status = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
+        var canUseAlbum = status == .authorized || status == .limited
+        if !canUseAlbum {
+            status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
+            guard status == .authorized || status == .limited else {
+                throw NSError(domain: "Duopaper", code: 1, userInfo: [NSLocalizedDescriptionKey: "没有相册写入权限，请在系统设置中允许。"])
+            }
+            canUseAlbum = false
         }
+
+        let existing: PHAssetCollection? = canUseAlbum ? {
+            let options = PHFetchOptions()
+            options.predicate = NSPredicate(format: "title = %@", albumName)
+            return PHAssetCollection.fetchAssetCollections(with: .album, subtype: .albumRegular, options: options).firstObject
+        }() : nil
+
         try await PHPhotoLibrary.shared().performChanges {
-            PHAssetCreationRequest.forAsset().addResource(with: .photo, fileURL: file, options: nil)
+            let request = PHAssetCreationRequest.forAsset()
+            request.addResource(with: .photo, fileURL: file, options: nil)
+            guard canUseAlbum, let placeholder = request.placeholderForCreatedAsset else { return }
+            if let existing {
+                PHAssetCollectionChangeRequest(for: existing)?.addAssets([placeholder] as NSArray)
+            } else {
+                PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: albumName).addAssets([placeholder] as NSArray)
+            }
         }
     }
 }

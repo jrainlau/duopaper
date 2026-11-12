@@ -8,7 +8,7 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationSplitView {
-            List(SettingsSection.allCases, selection: $selection) { section in
+            List(SettingsSection.macCases, selection: $selection) { section in
                 Label {
                     Text(section.title)
                 } icon: {
@@ -30,6 +30,7 @@ struct SettingsView: View {
         case .key: KeySettingsView()
         case .history: HistorySettingsView()
         case .download: DownloadSettingsView()
+        case .widget: EmptyView()
         case .cache: CacheSettingsView()
         case .about: AboutSettingsView()
         }
@@ -179,13 +180,15 @@ private struct DownloadSettingsView: View {
 
 private struct CacheSettingsView: View {
     @State private var cleared = false
+    @State private var size = CacheTools.imageCacheSize()
 
     var body: some View {
         Form {
             Section {
+                LabeledContent("图片缓存占用", value: CacheTools.format(size))
                 Button("清除图片与接口缓存", role: .destructive) {
-                    ImagePipeline.shared.cache.removeAll()
-                    PageCache.clear()
+                    CacheTools.clearAll()
+                    size = CacheTools.imageCacheSize()
                     cleared = true
                 }
             } footer: {

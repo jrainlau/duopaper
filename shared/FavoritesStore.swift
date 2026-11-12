@@ -6,6 +6,9 @@ import Observation
 final class FavoritesStore {
     private(set) var photos: [Photo] = []
 
+    /// 收藏列表变化后回调（iOS 用它同步小组件缩略图）。
+    @ObservationIgnored var onChange: (([Photo]) -> Void)?
+
     private static let file: URL = {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         let dir = base.appendingPathComponent("Duopaper", isDirectory: true)
@@ -29,5 +32,6 @@ final class FavoritesStore {
             photos.insert(photo, at: 0)
         }
         if let data = try? JSONEncoder().encode(photos) { try? data.write(to: Self.file, options: .atomic) }
+        onChange?(photos)
     }
 }

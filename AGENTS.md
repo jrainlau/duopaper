@@ -22,6 +22,7 @@
 
 - macOS 图标源自 `web/wallpaper-h5-icons/app/app-icon-1024.png`，改了源图后执行 `bash macos/scripts/make-icon.sh` 重新生成 `macos/Sources/Duopaper/AppIcon.icns`（需要 Pillow）并提交。
 - iOS：`ios/Duopaper.xcodeproj`，设计遵循 Apple HIG 的 iPhone Duo 章节（按尺寸类布局、不假设设备型号、系统控件自动适配侧边工具栏、折叠屏偶数列）。命令行构建模拟器版：`xcodebuild -project ios/Duopaper.xcodeproj -scheme Duopaper -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build`（沙箱内需加 `-IDEPackageSupportDisableManifestSandbox=1 OTHER_SWIFT_FLAGS=-disable-sandbox`）。
+- iOS 小组件：`ios/Widget`（WidgetKit 扩展，小 + 中两个尺寸，轮播收藏）；App 与小组件通过 App Group `group.com.jrainlau.duopaper` 共享 `ios/WidgetShared/WidgetShared.swift` 里定义的目录和清单。收藏时 `ios/Sources/Duopaper/WidgetSync.swift` 会下载 800px 小缩略图到共享目录；清除缓存（`shared/CacheTools.swift`）不会删它们。点小组件通过 `duopaper://favorites` 回到收藏页。真机需要在 Signing & Capabilities 给两个 target 开同一个 App Group。
 - 本地调试 macOS App：用 Xcode 打开 `macos/Duopaper.xcodeproj`，⌘R。仅构建 `.app`：`bash macos/scripts/build-app.sh`。
 - Web 的 GitHub Pages 由 `.github/workflows/static.yml` 在推送 `main` 时部署，不要在其他分支触发或改动其路径约定（`web/dist`）。
 - 不要擅自合并到 `main`，除非用户明确要求。

@@ -45,6 +45,8 @@ bash macos/scripts/build-app.sh --install  # 同时安装到 /Applications
 
 用 Xcode 打开 `ios/Duopaper.xcodeproj`，选 iPhone Duo 模拟器（Device Hub 里可开合、旋转），⌘R 运行。Access Key 在「设置」页填写。真机安装需要在 Xcode 的 Signing 里登录 Apple ID 选个人 Team。
 
+小组件：桌面可添加「收藏轮播」小组件（小 / 中），渐隐渐显轮播收藏里的图片，切换间隔在设置的「小组件」栏目里调，点击直接进入收藏页。需要给 `Duopaper` 和 `DuopaperWidgetExtension` 两个 target 开启同一个 App Group（`group.com.jrainlau.duopaper`）。保存的图片会放进名为 Duopaper 的相册。
+
 适配方式：只用标准 `TabView`（`.sidebarAdaptable`）、`NavigationStack`、sheet 与工具栏，按尺寸类而不是设备型号布局；外屏是 iPhone 布局，内屏自动变 regular 宽度，系统会把 Tab 栏和工具栏移到侧边；瀑布流在折叠屏上用偶数列。
 
 ## Web 开发（在 web/ 目录下）

@@ -1,5 +1,6 @@
 import Nuke
 import SwiftUI
+import WidgetKit
 
 /// 设置：侧边栏是栏目，详情在右侧。
 /// 用标准 NavigationSplitView：regular 宽度（Duo 内屏、横屏）左右并排，
@@ -44,6 +45,7 @@ struct SettingsView: View {
         case .key: KeySettingsView(onVerified: onVerified)
         case .history: HistorySettingsView()
         case .download: DownloadSettingsView()
+        case .widget: WidgetSettingsView()
         case .cache: CacheSettingsView()
         case .about: AboutSettingsView()
         }
@@ -171,21 +173,85 @@ private struct DownloadSettingsView: View {
     }
 }
 
-// MARK: - 缓存
+// MARK: - 小组件
 
-private struct CacheSettingsView: View {
-    @State private var cleared = false
+private struct WidgetSettingsView: View {
+    @Environment(FavoritesStore.self) private var favorites
+    @State private var interval = WidgetShared.interval
+    @State private var status = WidgetSync.status()
+    @State private var syncing = false
+
+    private let options: [(title: String, seconds: TimeInterval)] = [
+        ("1 分钟", 60), ("5 分钟", 300), ("15 分钟", 900), ("30 分钟", 1800), ("1 小时", 3600),
+    ]
 
     var body: some View {
         Form {
             Section {
+                Picker("切换间隔", selection: $interval) {
+                    ForEach(options, id: \.seconds) { Text($0.title).tag($0.seconds) }
+                }
+                .pickerStyle(.inline)
+                .labelsHidden()
+                .onChange(of: interval) {
+                    WidgetShared.interval = interval
+                    WidgetCenter.shared.reloadTimelines(ofKind: WidgetShared.kind)
+                }
+            } header: {
+                Text("轮播切换间隔")
+            } footer: {
+                Text("小组件会渐隐渐显地轮播收藏里的图片；桌面上有多个小组件时，各自随机、互不同步。系统对小组件刷新有节流，实际切换时间可能略有偏差。")
+            }
+
+            Section {
+                LabeledContent("数据通道") {
+                    Label(status.groupAvailable ? "正常" : "不可用", systemImage: status.groupAvailable ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                        .foregroundStyle(status.groupAvailable ? .green : .orange)
+                }
+                LabeledContent("小组件缩略图", value: "\(status.thumbs) / \(favorites.photos.count) 张")
+                Button {
+                    syncing = true
+                    Task {
+                        await WidgetSync.shared.sync(favorites.photos)
+                        status = WidgetSync.status()
+                        syncing = false
+                    }
+                } label: {
+                    HStack {
+                        Text("立即同步")
+                        if syncing { Spacer(); ProgressView() }
+                    }
+                }
+                .disabled(syncing)
+            } header: {
+                Text("状态")
+            } footer: {
+                Text(status.groupAvailable
+                    ? "收藏图片时会自动保存一份很小的缩略图给小组件使用（每张约几十 KB）。点击小组件会直接打开收藏页。"
+                    : "App Group 不可用：请在 Xcode 的 Signing & Capabilities 里为 Duopaper 和 DuopaperWidgetExtension 两个 target 开启同一个 App Group（group.com.jrainlau.duopaper）。")
+            }
+        }
+        .onAppear { status = WidgetSync.status() }
+    }
+}
+
+// MARK: - 缓存
+
+private struct CacheSettingsView: View {
+    @State private var cleared = false
+    @State private var size = CacheTools.imageCacheSize()
+
+    var body: some View {
+        Form {
+            Section {
+                LabeledContent("图片缓存占用", value: CacheTools.format(size))
                 Button("清除图片与接口缓存", role: .destructive) {
-                    ImagePipeline.shared.cache.removeAll()
-                    PageCache.clear()
+                    CacheTools.clearAll()
+                    size = CacheTools.imageCacheSize()
                     cleared = true
                 }
             } footer: {
-                Text(cleared ? "已清除。" : "接口结果会缓存 6 小时以节省每小时 50 次的额度，图片缓存用于加快浏览。")
+                Text(cleared ? "已清除。" : "会清除浏览过的图片、App 里的缩略图和接口缓存（接口结果缓存 6 小时，节省每小时 50 次的额度）。\n\n你收藏的图片的小组件专用缩略图单独保存，不属于缓存，清除后小组件仍能正常显示；收藏页里的图片会重新联网加载。")
             }
         }
     }
