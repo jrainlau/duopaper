@@ -11,6 +11,7 @@ struct DiscoverView: View {
     @State private var refreshToken = 0
     @State private var loadTask: Task<Void, Never>?
     @State private var didInitialLoad = false
+    @State private var showQuotaToast = false
 
     private var topicBinding: Binding<String> {
         Binding(
@@ -73,6 +74,11 @@ struct DiscoverView: View {
                     }
                     ToolbarItem(placement: .primaryAction) {
                         Button(L("discover.refresh"), systemImage: "arrow.clockwise") { refreshToken += 1 }
+                        // 配额耗尽提示：系统 popover 锚定在刷新按钮上，iOS 26 自带液态玻璃背景，点外部自动消失。
+                        .popover(isPresented: $showQuotaToast, arrowEdge: .leading) {
+                            quotaExhaustedToast
+                                .presentationCompactAdaptation(.popover)
+                        }
                     }
                 }
         }
@@ -93,7 +99,21 @@ struct DiscoverView: View {
     private func startLoad() {
         loadTask?.cancel()
         let key = accessKey, query = query, orientation = orientation
-        loadTask = Task { await store.reload(key: key, query: query, orientation: orientation) }
+        loadTask = Task {
+            await store.reload(key: key, query: query, orientation: orientation)
+            // 默认不展示任何配额信息；只有配额耗尽才弹一次气泡。
+            if QuotaTracker.shared.exhausted { showQuotaToast = true }
+        }
+    }
+
+    /// popover 内容：背景由系统提供（iOS 26 为液态玻璃），这里只放图标和文案。
+    private var quotaExhaustedToast: some View {
+        Label(L("quota.hourlyExhausted"), systemImage: "hourglass")
+            .font(.subheadline.weight(.medium))
+            .frame(maxWidth: 280, alignment: .leading)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
     }
 
     @ViewBuilder
