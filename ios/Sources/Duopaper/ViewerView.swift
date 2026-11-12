@@ -3,7 +3,7 @@ import Photos
 import SwiftUI
 
 /// 当前正在预览的图片，以及展开 / 收起的进度。
-/// 蒙层和卡片是两层：蒙层随 `photo` 瞬间出现 / 消失，卡片只用 `shown` 驱动缩放和透明度。
+/// 蒙层和卡片是两层，都由 `shown` 驱动：蒙层只渐显渐隐，卡片缩放加透明度。
 @MainActor
 @Observable
 final class ViewerState {
@@ -30,12 +30,14 @@ final class ViewerState {
     }
 }
 
-/// 蒙层：没有任何动画，点击立即开始关闭。
+/// 蒙层：只做渐显 / 渐隐，不缩放；点击立即开始关闭。
 struct ViewerDim: View {
+    let shown: Bool
     let onTap: () -> Void
 
     var body: some View {
-        Color.black.opacity(0.5)
+        Color.black.opacity(shown ? 0.5 : 0)
+            .animation(shown ? .easeOut(duration: 0.3) : .easeIn(duration: 0.16), value: shown)
             .ignoresSafeArea()
             .contentShape(Rectangle())
             .onTapGesture(perform: onTap)

@@ -17,7 +17,7 @@ struct RootView: View {
                 .disabled(viewer.photo != nil)
 
             if let photo = viewer.photo {
-                ViewerDim { viewer.close() }
+                ViewerDim(shown: viewer.shown) { viewer.close() }
                 ViewerOverlay(photo: photo, shown: viewer.shown) { viewer.close() }
                     .onAppear {
                         withAnimation(.smooth(duration: 0.38)) { viewer.shown = true }
