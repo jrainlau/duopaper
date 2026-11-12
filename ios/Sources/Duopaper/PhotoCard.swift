@@ -11,6 +11,7 @@ struct PhotoCard: View {
             .fill(photo.tint)
             .overlay { RemoteImage(url: UnsplashClient.thumbURL(photo), tint: photo.tint) }
             .overlay(alignment: .topTrailing) {
+                if isFavorite {
                 Button(action: onToggleFavorite) {
                     Image(systemName: isFavorite ? "star.fill" : "star")
                         .font(.system(size: 13, weight: .semibold))
@@ -21,7 +22,8 @@ struct PhotoCard: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(isFavorite ? "取消收藏" : "收藏")
+                .accessibilityLabel("取消收藏")
+                }
             }
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
