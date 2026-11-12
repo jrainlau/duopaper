@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum SettingsSection: String, CaseIterable, Identifiable {
-    case language, key, history, download, widget, cache, about
+    case key, history, download, widget, language, cache, about
     var id: String { rawValue }
 
     var title: String {

@@ -36,7 +36,7 @@ struct SettingsView: View {
     }
 
     private func selectDefaultIfWide() {
-        if sizeClass == .regular && selection == nil { selection = .language }
+        if sizeClass == .regular && selection == nil { selection = .key }
     }
 
     @ViewBuilder

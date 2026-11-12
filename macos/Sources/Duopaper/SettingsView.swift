@@ -4,7 +4,7 @@ import SwiftUI
 
 /// 设置：左侧栏目，右侧详情，和 iOS 版一致。
 struct SettingsView: View {
-    @State private var selection: SettingsSection = .language
+    @State private var selection: SettingsSection = .key
 
     var body: some View {
         NavigationSplitView(columnVisibility: .constant(.all)) {
