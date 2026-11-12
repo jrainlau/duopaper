@@ -2,13 +2,13 @@ import Photos
 import SwiftUI
 
 /// 预览 sheet：用标准 NavigationStack + 工具栏，Duo 上工具栏会按系统规则自动移到侧边。
+/// 没有关闭按钮，下拉 sheet 即可关闭；收藏、清晰度、下载都在右下角。
 struct ViewerView: View {
     let photo: Photo
 
     @AppStorage("accessKey") private var accessKey = ""
     @AppStorage("downloadSize") private var sizeRaw = DownloadSize.standard.rawValue
     @Environment(FavoritesStore.self) private var favorites
-    @Environment(\.dismiss) private var dismiss
     @State private var downloading = false
     @State private var toast: String?
 
@@ -36,29 +36,24 @@ struct ViewerView: View {
             .navigationTitle(photo.user.name)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("关闭", systemImage: "xmark", role: .close) { dismiss() }
-                }
-                ToolbarItem(placement: .primaryAction) {
+                ToolbarItemGroup(placement: .bottomBar) {
+                    Spacer()
+
                     Button(isFavorite ? "取消收藏" : "收藏", systemImage: isFavorite ? "star.fill" : "star") {
                         favorites.toggle(photo)
                     }
                     .tint(isFavorite ? .yellow : nil)
-                }
-                ToolbarItemGroup(placement: .bottomBar) {
+
                     Picker("清晰度", selection: $sizeRaw) {
                         ForEach(DownloadSize.allCases) { Text($0.title).tag($0.rawValue) }
                     }
                     .pickerStyle(.menu)
-
-                    Spacer()
 
                     Button(action: download) {
                         if downloading {
                             ProgressView()
                         } else {
                             Label("保存到相册", systemImage: "arrow.down.circle")
-                                .labelStyle(.titleAndIcon)
                         }
                     }
                     .buttonStyle(.borderedProminent)
