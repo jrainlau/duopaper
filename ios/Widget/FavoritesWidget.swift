@@ -72,6 +72,64 @@ enum WidgetImage {
     }
 }
 
+/// 「洗牌袋」伪随机：remaining 是本轮还没播的，played 是本轮已播的。
+/// 每次从 remaining 里取一张放进 played；remaining 空了就整体换过来（重新洗牌）开下一轮。
+/// 状态持久化，收藏增删时会增量调整而不是重新洗牌。
+private enum ShuffleBag {
+    private struct State: Codable {
+        var remaining: [String] = []
+        var played: [String] = []
+        var last: String?
+    }
+
+    private static let key = "widgetShuffleBag"
+
+    static func draw(_ count: Int, from pool: [WidgetShared.Item]) -> [WidgetShared.Item] {
+        let byID = Dictionary(pool.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
+        var state = load()
+
+        // 与当前收藏对齐：删掉已不存在的，新增的随机插进本轮剩余里。
+        state.remaining = state.remaining.filter { byID[$0] != nil }
+        state.played = state.played.filter { byID[$0] != nil }
+        let known = Set(state.remaining).union(state.played)
+        for id in byID.keys where !known.contains(id) {
+            state.remaining.insert(id, at: Int.random(in: 0...state.remaining.count))
+        }
+
+        var result: [WidgetShared.Item] = []
+        while result.count < count {
+            if state.remaining.isEmpty {
+                state.remaining = state.played.shuffled()
+                state.played = []
+                // 新一轮的第一张不能和上一轮最后一张相同。
+                if state.remaining.count > 1, state.remaining.first == state.last {
+                    state.remaining.swapAt(0, Int.random(in: 1..<state.remaining.count))
+                }
+            }
+            guard !state.remaining.isEmpty else { break }
+            let id = state.remaining.removeFirst()
+            state.played.append(id)
+            state.last = id
+            if let item = byID[id] { result.append(item) }
+        }
+        save(state)
+        return result
+    }
+
+    private static func load() -> State {
+        guard let data = WidgetShared.defaults?.data(forKey: key),
+              let state = try? JSONDecoder().decode(State.self, from: data) else {
+            return State()
+        }
+        return state
+    }
+
+    private static func save(_ state: State) {
+        guard let data = try? JSONEncoder().encode(state) else { return }
+        WidgetShared.defaults?.set(data, forKey: key)
+    }
+}
+
 struct FavoritesProvider: TimelineProvider {
     func placeholder(in context: Context) -> FavoriteEntry {
         FavoriteEntry(date: .now, item: nil, hasFavorites: true)
@@ -103,15 +161,9 @@ struct FavoritesProvider: TimelineProvider {
         let displaySize = context.displaySize
         let pixel = CGSize(width: displaySize.width * 2.5, height: displaySize.height * 2.5)
 
-        // 每个小组件实例各自洗牌、各自随机起点，所以多个小组件之间不同步。
-        var sequence: [WidgetShared.Item] = []
-        var last: String?
-        while sequence.count < count {
-            var round = pool.shuffled()
-            if round.count > 1, round.first?.id == last { round.swapAt(0, round.count - 1) }
-            sequence += round
-            last = round.last?.id
-        }
+        // 伪随机：顺序是随机的，但每一轮里每张图只出现一次，播完才开下一轮。
+        // 进度持久化在 App Group 里，跨多次 getTimeline 延续，所以不会因为重新生成时间线而重复。
+        let sequence = ShuffleBag.draw(count, from: pool)
 
         var decoded: [String: UIImage] = [:]
         func image(for item: WidgetShared.Item) -> UIImage? {
