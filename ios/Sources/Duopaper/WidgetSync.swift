@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 import WidgetKit
 
 /// 把小组件当前来源（收藏，或关键词缓存的那一批图）同步成小组件专用的小缩略图 + 清单，放在 App Group 共享目录里。
@@ -70,15 +71,26 @@ actor WidgetSync {
         }
         var finished = 0
         await progress?(missing.isEmpty ? 1 : 0)
-        for photo in missing {
-            if let dest = WidgetShared.thumbDestination(for: photo.id),
-               let (data, response) = try? await URLSession.shared.data(from: UnsplashClient.widgetThumbURL(photo)),
-               (response as? HTTPURLResponse).map({ (200..<300).contains($0.statusCode) }) ?? true,
-               (try? data.write(to: dest, options: .atomic)) != nil {
-                downloaded = true
+
+        // 退到后台时向系统多要一点时间，避免下载到一半被挂起，只落下几张。
+        let background = await MainActor.run { UIApplication.shared.beginBackgroundTask(withName: "widget-thumbs") }
+        defer { if background != .invalid { Task { @MainActor in UIApplication.shared.endBackgroundTask(background) } } }
+
+        // 并发下载（同时 4 张），每张失败后重试一次。
+        await withTaskGroup(of: Bool.self) { group in
+            var iterator = missing.makeIterator()
+            func addNext() -> Bool {
+                guard let photo = iterator.next() else { return false }
+                group.addTask { await Self.download(photo) }
+                return true
             }
-            finished += 1
-            await progress?(Double(finished) / Double(missing.count))
+            for _ in 0..<4 { if !addNext() { break } }
+            while let ok = await group.next() {
+                if ok { downloaded = true }
+                finished += 1
+                await progress?(Double(finished) / Double(missing.count))
+                _ = addNext()
+            }
         }
 
         let keep = Set(photos.map { "\($0.id).jpg" })
@@ -89,6 +101,18 @@ actor WidgetSync {
         }
 
         if downloaded { WidgetCenter.shared.reloadTimelines(ofKind: WidgetShared.kind) }
+    }
+
+    private static func download(_ photo: Photo) async -> Bool {
+        guard let dest = WidgetShared.thumbDestination(for: photo.id) else { return false }
+        for attempt in 0..<2 {
+            if attempt > 0 { try? await Task.sleep(for: .seconds(1)) }
+            guard let (data, response) = try? await URLSession.shared.data(from: UnsplashClient.widgetThumbURL(photo)),
+                  (response as? HTTPURLResponse).map({ (200..<300).contains($0.statusCode) }) ?? true,
+                  (try? data.write(to: dest, options: .atomic)) != nil else { continue }
+            return true
+        }
+        return false
     }
 
     private static func item(_ photo: Photo) -> WidgetShared.Item {

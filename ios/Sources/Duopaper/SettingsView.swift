@@ -225,7 +225,6 @@ private struct WidgetSettingsView: View {
     @State private var interval = WidgetShared.interval
     @State private var tapAction = WidgetShared.tapAction
     @State private var status = WidgetSync.status()
-    @State private var syncing = false
 
     init() {
         let active = WidgetShared.sourceKeyword
@@ -255,6 +254,15 @@ private struct WidgetSettingsView: View {
         .onAppear {
             status = WidgetSync.status()
             cache = WidgetSource.load()
+            // 进页面时对账一次：缺的缩略图自动补，不需要手动点。
+            Task { await WidgetSync.shared.sync(favorites: favorites.photos) }
+        }
+        // 缩略图在后台自动补齐，页面可见时每秒刷新一次进度；离开页面任务自动取消。
+        .task {
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(1))
+                status = WidgetSync.status()
+            }
         }
         .onChange(of: mode) { applyMode() }
         .alert(L("widget.source.failed"), isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
@@ -408,20 +416,6 @@ private struct WidgetSettingsView: View {
                     .foregroundStyle(status.groupAvailable ? Color.appSuccess : Color.appWarning)
             }
             LabeledContent(L("widget.thumbs"), value: L("widget.thumbsValue", ["shown": "\(status.thumbs)", "total": "\(status.favorites)"]))
-            Button {
-                syncing = true
-                Task {
-                    await WidgetSync.shared.sync(favorites: favorites.photos)
-                    status = WidgetSync.status()
-                    syncing = false
-                }
-            } label: {
-                HStack {
-                    Text(L("widget.syncNow"))
-                    if syncing { Spacer(); ProgressView() }
-                }
-            }
-            .disabled(syncing)
         } header: {
             Text(L("widget.status"))
         } footer: {
