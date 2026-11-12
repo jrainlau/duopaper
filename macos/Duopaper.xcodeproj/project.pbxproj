@@ -1,0 +1,67 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A000000000000000000000C8 = {isa = PBXBuildFile; fileRef = A00000000000000000000064; };
+		A000000000000000000000C9 = {isa = PBXBuildFile; fileRef = A00000000000000000000065; };
+		A000000000000000000000CA = {isa = PBXBuildFile; fileRef = A00000000000000000000066; };
+		A000000000000000000000CB = {isa = PBXBuildFile; fileRef = A00000000000000000000067; };
+		A000000000000000000000CC = {isa = PBXBuildFile; fileRef = A00000000000000000000068; };
+		A000000000000000000000CD = {isa = PBXBuildFile; fileRef = A00000000000000000000069; };
+		A000000000000000000000CE = {isa = PBXBuildFile; fileRef = A0000000000000000000006A; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A00000000000000000000064 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A00000000000000000000065 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuopaperApp.swift; sourceTree = "<group>"; };
+		A00000000000000000000066 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		A00000000000000000000067 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCard.swift; sourceTree = "<group>"; };
+		A00000000000000000000068 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		A00000000000000000000069 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnsplashClient.swift; sourceTree = "<group>"; };
+		A0000000000000000000006A = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallpaperStore.swift; sourceTree = "<group>"; };
+		A00000000000000000000007 = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Duopaper.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A00000000000000000000011 = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A00000000000000000000012 = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Duopaper.entitlements; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A00000000000000000000013 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A00000000000000000000003 = {isa = PBXGroup; children = (A00000000000000000000004, A00000000000000000000011, A00000000000000000000012, A00000000000000000000006); sourceTree = "<group>"; };
+		A00000000000000000000004 = {isa = PBXGroup; children = (A00000000000000000000064, A00000000000000000000065, A00000000000000000000066, A00000000000000000000067, A00000000000000000000068, A00000000000000000000069, A0000000000000000000006A); name = Duopaper; path = Sources/Duopaper; sourceTree = "<group>"; };
+		A00000000000000000000006 = {isa = PBXGroup; children = (A00000000000000000000007); name = Products; sourceTree = "<group>"; };
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A00000000000000000000002 = {isa = PBXNativeTarget; buildConfigurationList = A0000000000000000000000C; buildPhases = (A00000000000000000000008, A00000000000000000000013); buildRules = (); dependencies = (); name = Duopaper; productName = Duopaper; productReference = A00000000000000000000007; productType = "com.apple.product-type.application"; };
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A00000000000000000000001 = {isa = PBXProject; attributes = {BuildIndependentTargetsInParallel = 1; LastUpgradeCheck = 1600;}; buildConfigurationList = A0000000000000000000000B; compatibilityVersion = "Xcode 14.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en, Base, "zh-Hans"); mainGroup = A00000000000000000000003; productRefGroup = A00000000000000000000006; projectDirPath = ""; projectRoot = ""; targets = (A00000000000000000000002); };
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A00000000000000000000008 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A000000000000000000000C8, A000000000000000000000C9, A000000000000000000000CA, A000000000000000000000CB, A000000000000000000000CC, A000000000000000000000CD, A000000000000000000000CE); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A0000000000000000000000D = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; MACOSX_DEPLOYMENT_TARGET = 14.0; SDKROOT = macosx; SWIFT_VERSION = 5.0; ONLY_ACTIVE_ARCH = YES; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG; }; name = Debug; };
+		A0000000000000000000000E = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; MACOSX_DEPLOYMENT_TARGET = 14.0; SDKROOT = macosx; SWIFT_VERSION = 5.0; SWIFT_COMPILATION_MODE = wholemodule; }; name = Release; };
+		A0000000000000000000000F = {isa = XCBuildConfiguration; buildSettings = {ARCHS = arm64; CODE_SIGN_ENTITLEMENTS = Duopaper.entitlements; CODE_SIGN_IDENTITY = "-"; CODE_SIGN_STYLE = Manual; COMBINE_HIDPI_IMAGES = YES; ENABLE_HARDENED_RUNTIME = NO; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = Info.plist; PRODUCT_BUNDLE_IDENTIFIER = com.jrainlau.duopaper; PRODUCT_NAME = Duopaper; DEVELOPMENT_TEAM = ""; }; name = Debug; };
+		A00000000000000000000010 = {isa = XCBuildConfiguration; buildSettings = {ARCHS = arm64; CODE_SIGN_ENTITLEMENTS = Duopaper.entitlements; CODE_SIGN_IDENTITY = "-"; CODE_SIGN_STYLE = Manual; COMBINE_HIDPI_IMAGES = YES; ENABLE_HARDENED_RUNTIME = NO; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = Info.plist; PRODUCT_BUNDLE_IDENTIFIER = com.jrainlau.duopaper; PRODUCT_NAME = Duopaper; DEVELOPMENT_TEAM = ""; }; name = Release; };
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A0000000000000000000000B = {isa = XCConfigurationList; buildConfigurations = (A0000000000000000000000D, A0000000000000000000000E); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		A0000000000000000000000C = {isa = XCConfigurationList; buildConfigurations = (A0000000000000000000000F, A00000000000000000000010); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+/* End XCConfigurationList section */
+	};
+	rootObject = A00000000000000000000001;
+}
