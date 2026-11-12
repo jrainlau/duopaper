@@ -3,51 +3,229 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 70;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A00000000000000000000021 /* Nuke in Frameworks */ = {isa = PBXBuildFile; productRef = A0000000000000000000001F /* Nuke */; };
+		A00000000000000000000022 /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000020 /* NukeUI */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
-		A00000000000000000000007 = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Duopaper.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A00000000000000000000011 = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		A00000000000000000000012 = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Duopaper.entitlements; sourceTree = "<group>"; };
+		A00000000000000000000007 /* Duopaper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Duopaper.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A00000000000000000000011 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A00000000000000000000012 /* Duopaper.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Duopaper.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		A00000000000000000000004 = {isa = PBXFileSystemSynchronizedRootGroup; path = Sources/Duopaper; sourceTree = "<group>"; };
+		A00000000000000000000004 /* Sources/Duopaper */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Sources/Duopaper; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		A00000000000000000000013 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		A00000000000000000000013 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00000000000000000000021 /* Nuke in Frameworks */,
+				A00000000000000000000022 /* NukeUI in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		A00000000000000000000003 = {isa = PBXGroup; children = (A00000000000000000000004, A00000000000000000000011, A00000000000000000000012, A00000000000000000000006); sourceTree = "<group>"; };
-		A00000000000000000000006 = {isa = PBXGroup; children = (A00000000000000000000007); name = Products; sourceTree = "<group>"; };
+		A00000000000000000000003 = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000004 /* Sources/Duopaper */,
+				A00000000000000000000011 /* Info.plist */,
+				A00000000000000000000012 /* Duopaper.entitlements */,
+				A00000000000000000000006 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A00000000000000000000006 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000007 /* Duopaper.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A00000000000000000000002 = {isa = PBXNativeTarget; buildConfigurationList = A0000000000000000000000C; buildPhases = (A00000000000000000000008, A00000000000000000000013); buildRules = (); dependencies = (); fileSystemSynchronizedGroups = (A00000000000000000000004); name = Duopaper; productName = Duopaper; productReference = A00000000000000000000007; productType = "com.apple.product-type.application"; };
+		A00000000000000000000002 /* Duopaper */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A0000000000000000000000C /* Build configuration list for PBXNativeTarget "Duopaper" */;
+			buildPhases = (
+				A00000000000000000000008 /* Sources */,
+				A00000000000000000000013 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				A00000000000000000000004 /* Sources/Duopaper */,
+			);
+			name = Duopaper;
+			packageProductDependencies = (
+				A0000000000000000000001F /* Nuke */,
+				A00000000000000000000020 /* NukeUI */,
+			);
+			productName = Duopaper;
+			productReference = A00000000000000000000007 /* Duopaper.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		A00000000000000000000001 = {isa = PBXProject; attributes = {BuildIndependentTargetsInParallel = 1; LastUpgradeCheck = 1600;}; buildConfigurationList = A0000000000000000000000B; compatibilityVersion = "Xcode 14.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en, Base, "zh-Hans"); mainGroup = A00000000000000000000003; productRefGroup = A00000000000000000000006; projectDirPath = ""; projectRoot = ""; targets = (A00000000000000000000002); };
+		A00000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 1600;
+			};
+			buildConfigurationList = A0000000000000000000000B /* Build configuration list for PBXProject "Duopaper" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				"zh-Hans",
+			);
+			mainGroup = A00000000000000000000003;
+			packageReferences = (
+				A0000000000000000000001E /* XCRemoteSwiftPackageReference "Nuke" */,
+			);
+			productRefGroup = A00000000000000000000006 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A00000000000000000000002 /* Duopaper */,
+			);
+		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		A00000000000000000000008 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		A00000000000000000000008 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		A0000000000000000000000D = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; MACOSX_DEPLOYMENT_TARGET = 14.0; SDKROOT = macosx; SWIFT_VERSION = 5.0; ONLY_ACTIVE_ARCH = YES; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG; }; name = Debug; };
-		A0000000000000000000000E = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; MACOSX_DEPLOYMENT_TARGET = 14.0; SDKROOT = macosx; SWIFT_VERSION = 5.0; SWIFT_COMPILATION_MODE = wholemodule; }; name = Release; };
-		A0000000000000000000000F = {isa = XCBuildConfiguration; buildSettings = {ARCHS = arm64; CODE_SIGN_ENTITLEMENTS = Duopaper.entitlements; CODE_SIGN_IDENTITY = "-"; CODE_SIGN_STYLE = Manual; COMBINE_HIDPI_IMAGES = YES; ENABLE_HARDENED_RUNTIME = NO; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = Info.plist; PRODUCT_BUNDLE_IDENTIFIER = com.jrainlau.duopaper; PRODUCT_NAME = Duopaper; DEVELOPMENT_TEAM = ""; }; name = Debug; };
-		A00000000000000000000010 = {isa = XCBuildConfiguration; buildSettings = {ARCHS = arm64; CODE_SIGN_ENTITLEMENTS = Duopaper.entitlements; CODE_SIGN_IDENTITY = "-"; CODE_SIGN_STYLE = Manual; COMBINE_HIDPI_IMAGES = YES; ENABLE_HARDENED_RUNTIME = NO; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = Info.plist; PRODUCT_BUNDLE_IDENTIFIER = com.jrainlau.duopaper; PRODUCT_NAME = Duopaper; DEVELOPMENT_TEAM = ""; }; name = Release; };
+		A0000000000000000000000D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A0000000000000000000000E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		A0000000000000000000000F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = arm64;
+				CODE_SIGN_ENTITLEMENTS = Duopaper.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jrainlau.duopaper;
+				PRODUCT_NAME = Duopaper;
+			};
+			name = Debug;
+		};
+		A00000000000000000000010 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = arm64;
+				CODE_SIGN_ENTITLEMENTS = Duopaper.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jrainlau.duopaper;
+				PRODUCT_NAME = Duopaper;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A0000000000000000000000B = {isa = XCConfigurationList; buildConfigurations = (A0000000000000000000000D, A0000000000000000000000E); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
-		A0000000000000000000000C = {isa = XCConfigurationList; buildConfigurations = (A0000000000000000000000F, A00000000000000000000010); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		A0000000000000000000000B /* Build configuration list for PBXProject "Duopaper" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A0000000000000000000000D /* Debug */,
+				A0000000000000000000000E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A0000000000000000000000C /* Build configuration list for PBXNativeTarget "Duopaper" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A0000000000000000000000F /* Debug */,
+				A00000000000000000000010 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A0000000000000000000001E /* XCRemoteSwiftPackageReference "Nuke" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kean/Nuke.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 13.2.3;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A0000000000000000000001F /* Nuke */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A0000000000000000000001E /* XCRemoteSwiftPackageReference "Nuke" */;
+			productName = Nuke;
+		};
+		A00000000000000000000020 /* NukeUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A0000000000000000000001E /* XCRemoteSwiftPackageReference "Nuke" */;
+			productName = NukeUI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
-	rootObject = A00000000000000000000001;
+	rootObject = A00000000000000000000001 /* Project object */;
 }

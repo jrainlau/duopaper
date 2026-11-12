@@ -1,3 +1,4 @@
+import Nuke
 import SwiftUI
 
 @main
@@ -5,7 +6,7 @@ struct DuopaperApp: App {
     @State private var favorites = FavoritesStore()
 
     init() {
-        URLCache.shared = URLCache(memoryCapacity: 128 << 20, diskCapacity: 1 << 30)
+        ImagePipeline.shared = ImagePipeline(configuration: .withDataCache(name: "com.jrainlau.duopaper.images", sizeLimit: 1 << 30))
     }
 
     var body: some Scene {

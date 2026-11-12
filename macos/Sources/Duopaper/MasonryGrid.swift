@@ -5,6 +5,7 @@ import SwiftUI
 struct MasonryGrid<Content: View>: View {
     let photos: [Photo]
     var minColumnWidth: CGFloat = 220
+    var maxColumns = 6
     var spacing: CGFloat = 12
     var padding: CGFloat = 16
     var footer: AnyView? = nil
@@ -13,7 +14,7 @@ struct MasonryGrid<Content: View>: View {
     var body: some View {
         GeometryReader { geo in
             let inner = max(geo.size.width - padding * 2, minColumnWidth)
-            let count = max(1, Int((inner + spacing) / (minColumnWidth + spacing)))
+            let count = min(maxColumns, max(1, Int((inner + spacing) / (minColumnWidth + spacing))))
             let colWidth = (inner - spacing * CGFloat(count - 1)) / CGFloat(count)
             let columns = Self.distribute(photos, count: count, width: colWidth, spacing: spacing)
 

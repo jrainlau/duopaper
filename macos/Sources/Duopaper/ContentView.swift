@@ -26,14 +26,48 @@ struct ContentView: View {
     }
 
     var body: some View {
+        ZStack {
+            browser
+                .allowsHitTesting(viewing == nil)
+                .disabled(viewing != nil)
+
+            if let photo = viewing {
+                Color.black.opacity(0.45)
+                    .ignoresSafeArea()
+                    .contentShape(Rectangle())
+                    .onTapGesture { viewing = nil }
+                    .transition(.opacity)
+
+                GeometryReader { geo in
+                    ViewerView(photo: photo, accessKey: accessKey)
+                        .frame(width: min(geo.size.width * 0.84, 1180), height: min(geo.size.height * 0.84, 800))
+                        .position(x: geo.size.width / 2, y: geo.size.height / 2)
+                }
+                .allowsHitTesting(true)
+                .transition(.scale(scale: 0.96).combined(with: .opacity))
+
+                Button("") { viewing = nil }
+                    .keyboardShortcut(.cancelAction)
+                    .frame(width: 0, height: 0)
+                    .opacity(0)
+            }
+        }
+        .animation(.spring(response: 0.35, dampingFraction: 0.85), value: viewing?.id)
+    }
+
+    private var browser: some View {
         NavigationSplitView {
             List(selection: $sidebar) {
                 Section {
-                    Label("收藏", systemImage: "star").tag(SidebarItem.favorites)
+                    Label { Text("收藏") } icon: { Image(systemName: "star.fill").foregroundStyle(.yellow) }
+                        .tag(SidebarItem.favorites)
                 }
                 Section("分类") {
                     ForEach(Topic.all) { t in
-                        Label(t.title, systemImage: t.symbol).tag(SidebarItem.topic(t.query))
+                        Label { Text(t.title) } icon: {
+                            Image(systemName: t.symbol).symbolRenderingMode(.hierarchical).foregroundStyle(t.tint)
+                        }
+                        .tag(SidebarItem.topic(t.query))
                     }
                 }
             }
@@ -77,9 +111,6 @@ struct ContentView: View {
         .onAppear {
             sidebar = .topic(query)
             if !Topic.all.contains(where: { $0.query == query }) { searchText = query }
-        }
-        .sheet(item: $viewing) { photo in
-            ViewerView(photo: photo, accessKey: accessKey)
         }
     }
 

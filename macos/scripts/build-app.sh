@@ -4,27 +4,13 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+xcodebuild -project Duopaper.xcodeproj -scheme Duopaper -configuration Release \
+  -derivedDataPath build/dd -skipMacroValidation -skipPackagePluginValidation ${XCODEBUILD_FLAGS:-} build \
+  | grep -E "error:|BUILD" || true
+
 APP="build/Duopaper.app"
-ICON_SRC="../web/wallpaper-h5-icons/app/app-icon-1024.png"
-
-swift build --disable-sandbox -c release --arch arm64
-BIN="$(swift build --disable-sandbox -c release --arch arm64 --show-bin-path)/Duopaper"
-
 rm -rf "$APP"
-mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp "$BIN" "$APP/Contents/MacOS/Duopaper"
-cp Info.plist "$APP/Contents/Info.plist"
-
-ICONSET="build/AppIcon.iconset"
-rm -rf "$ICONSET" && mkdir -p "$ICONSET"
-for s in 16 32 128 256 512; do
-  sips -z $s $s "$ICON_SRC" --out "$ICONSET/icon_${s}x${s}.png" >/dev/null
-  sips -z $((s*2)) $((s*2)) "$ICON_SRC" --out "$ICONSET/icon_${s}x${s}@2x.png" >/dev/null
-done
-iconutil -c icns "$ICONSET" -o "$APP/Contents/Resources/AppIcon.icns"
-rm -rf "$ICONSET"
-
-codesign --force --deep --sign - --entitlements Duopaper.entitlements "$APP"
+cp -R build/dd/Build/Products/Release/Duopaper.app "$APP"
 echo "==> 已生成 $APP"
 
 if [ "${1:-}" = "--install" ]; then

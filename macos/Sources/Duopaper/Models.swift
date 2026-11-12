@@ -1,4 +1,4 @@
-import Foundation
+import SwiftUI
 
 struct Photo: Decodable, Identifiable, Hashable {
     struct Urls: Decodable, Hashable {
@@ -22,14 +22,23 @@ struct Photo: Decodable, Identifiable, Hashable {
     let id: String
     let width: Int
     let height: Int
+    let color: String?
     let altDescription: String?
     let urls: Urls
     let links: Links
     let user: User
 
     enum CodingKeys: String, CodingKey {
-        case id, width, height, urls, links, user
+        case id, width, height, color, urls, links, user
         case altDescription = "alt_description"
+    }
+}
+
+extension Photo {
+    /// Unsplash 返回的主色，用作占位底色。
+    var tint: Color {
+        guard let color, color.hasPrefix("#"), let v = UInt32(color.dropFirst(), radix: 16) else { return Color.gray.opacity(0.3) }
+        return Color(red: Double((v >> 16) & 0xFF) / 255, green: Double((v >> 8) & 0xFF) / 255, blue: Double(v & 0xFF) / 255)
     }
 }
 
@@ -88,20 +97,21 @@ struct Topic: Identifiable, Hashable {
     let title: String
     let query: String
     let symbol: String
+    let tint: Color
     var id: String { query }
 
     static let all: [Topic] = [
-        .init(title: "精选", query: "wallpaper", symbol: "star"),
-        .init(title: "极简", query: "minimal", symbol: "circle.dashed"),
-        .init(title: "秋日", query: "autumn", symbol: "leaf"),
-        .init(title: "自然", query: "nature", symbol: "mountain.2"),
-        .init(title: "3D", query: "3d render", symbol: "cube"),
-        .init(title: "实验", query: "experimental", symbol: "flask"),
-        .init(title: "胶片", query: "film photography", symbol: "film"),
-        .init(title: "街拍", query: "street photography", symbol: "figure.walk"),
-        .init(title: "建筑", query: "architecture", symbol: "building.2"),
-        .init(title: "纹理", query: "textures", symbol: "square.grid.3x3"),
-        .init(title: "旅行", query: "travel", symbol: "airplane"),
-        .init(title: "人物", query: "portrait", symbol: "person.crop.square"),
+        .init(title: "精选", query: "wallpaper", symbol: "star", tint: .yellow),
+        .init(title: "极简", query: "minimal", symbol: "circle.dashed", tint: .gray),
+        .init(title: "秋日", query: "autumn", symbol: "leaf", tint: .orange),
+        .init(title: "自然", query: "nature", symbol: "mountain.2", tint: .green),
+        .init(title: "3D", query: "3d render", symbol: "cube", tint: .indigo),
+        .init(title: "实验", query: "experimental", symbol: "flask", tint: .purple),
+        .init(title: "胶片", query: "film photography", symbol: "film", tint: .brown),
+        .init(title: "街拍", query: "street photography", symbol: "figure.walk", tint: .teal),
+        .init(title: "建筑", query: "architecture", symbol: "building.2", tint: .blue),
+        .init(title: "纹理", query: "textures", symbol: "square.grid.3x3", tint: .mint),
+        .init(title: "旅行", query: "travel", symbol: "airplane", tint: .cyan),
+        .init(title: "人物", query: "portrait", symbol: "person.crop.square", tint: .pink),
     ]
 }
