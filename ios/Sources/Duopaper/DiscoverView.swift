@@ -9,6 +9,13 @@ struct DiscoverView: View {
     @State private var searchText = ""
     @State private var refreshToken = 0
 
+    private var topicBinding: Binding<String> {
+        Binding(
+            get: { query },
+            set: { searchText = ""; query = $0 }
+        )
+    }
+
     private var orientation: Orientation { Orientation(rawValue: orientationRaw) ?? .any }
 
     private struct LoadID: Equatable {
@@ -17,34 +24,40 @@ struct DiscoverView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                TopicChips(selected: query) { topic in
-                    searchText = ""
-                    query = topic.query
+            content
+                .navigationTitle(Topic.all.first { $0.query == query }?.title ?? query)
+                .navigationBarTitleDisplayMode(.inline)
+                .searchable(text: $searchText, prompt: "搜索")
+                .searchToolbarBehavior(.minimize)
+                .onSubmit(of: .search) {
+                    let q = searchText.trimmingCharacters(in: .whitespaces)
+                    query = q.isEmpty ? "wallpaper" : q
+                    refreshToken += 1
                 }
-                content
-            }
-            .navigationTitle(Topic.all.first { $0.query == query }?.title ?? query)
-            .navigationBarTitleDisplayMode(.inline)
-            .searchable(text: $searchText, prompt: "搜索")
-            .onSubmit(of: .search) {
-                let q = searchText.trimmingCharacters(in: .whitespaces)
-                query = q.isEmpty ? "wallpaper" : q
-                refreshToken += 1
-            }
-            .toolbar {
-                ToolbarItemGroup(placement: .primaryAction) {
-                    Menu {
-                        Picker("方向", selection: $orientationRaw) {
-                            ForEach(Orientation.allCases) { Text($0.title).tag($0.rawValue) }
+                .toolbar {
+                    ToolbarItem(placement: .primaryAction) {
+                        Menu {
+                            Picker("分类", selection: topicBinding) {
+                                ForEach(Topic.all) { topic in
+                                    Label(topic.title, systemImage: topic.symbol).tag(topic.query)
+                                }
+                            }
+                        } label: {
+                            Label("分类", systemImage: "square.grid.2x2")
                         }
-                        Divider()
-                        Button("换一批", systemImage: "arrow.clockwise") { refreshToken += 1 }
-                    } label: {
-                        Label("筛选", systemImage: "line.3.horizontal.decrease")
+                    }
+                    ToolbarItem(placement: .primaryAction) {
+                        Menu {
+                            Picker("方向", selection: $orientationRaw) {
+                                ForEach(Orientation.allCases) { Text($0.title).tag($0.rawValue) }
+                            }
+                            Divider()
+                            Button("换一批", systemImage: "arrow.clockwise") { refreshToken += 1 }
+                        } label: {
+                            Label("筛选", systemImage: "line.3.horizontal.decrease")
+                        }
                     }
                 }
-            }
         }
         .task(id: LoadID(key: accessKey, query: query, orientation: orientationRaw, token: refreshToken)) {
             await store.reload(key: accessKey, query: query, orientation: orientation)
