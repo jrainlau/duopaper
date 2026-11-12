@@ -1,19 +1,25 @@
 import SwiftUI
 
+enum SidebarItem: Hashable {
+    case favorites
+    case topic(String)
+}
+
 struct ContentView: View {
     @AppStorage("accessKey") private var accessKey = ""
     @AppStorage("query") private var query = "wallpaper"
     @AppStorage("orientation") private var orientationRaw = ""
-    @AppStorage("downloadSize") private var sizeRaw = DownloadSize.standard.rawValue
 
+    @Environment(FavoritesStore.self) private var favorites
+    @Environment(\.openSettings) private var openSettings
     @State private var store = WallpaperStore()
     @State private var searchText = ""
-    @State private var topic: Topic.ID?
+    @State private var sidebar: SidebarItem?
     @State private var refreshToken = 0
-    @Environment(\.openSettings) private var openSettings
+    @State private var viewing: Photo?
 
     private var orientation: Orientation { Orientation(rawValue: orientationRaw) ?? .any }
-    private var size: DownloadSize { DownloadSize(rawValue: sizeRaw) ?? .standard }
+    private var showingFavorites: Bool { sidebar == .favorites }
 
     private struct LoadID: Equatable {
         let key: String, query: String, orientation: String, token: Int
@@ -21,20 +27,27 @@ struct ContentView: View {
 
     var body: some View {
         NavigationSplitView {
-            List(Topic.all, selection: $topic) { t in
-                Label(t.title, systemImage: t.symbol)
+            List(selection: $sidebar) {
+                Section {
+                    Label("收藏", systemImage: "star").tag(SidebarItem.favorites)
+                }
+                Section("分类") {
+                    ForEach(Topic.all) { t in
+                        Label(t.title, systemImage: t.symbol).tag(SidebarItem.topic(t.query))
+                    }
+                }
             }
             .navigationSplitViewColumnWidth(min: 160, ideal: 190, max: 260)
         } detail: {
             detail
-                .navigationTitle(Topic.all.first { $0.query == query }?.title ?? query)
-                .navigationSubtitle(store.total > 0 ? "\(store.photos.count) / \(store.total)" : "")
+                .navigationTitle(title)
+                .navigationSubtitle(subtitle)
         }
         .searchable(text: $searchText, placement: .toolbar, prompt: "搜索")
         .onSubmit(of: .search) {
             let q = searchText.trimmingCharacters(in: .whitespaces)
             query = q.isEmpty ? "wallpaper" : q
-            topic = Topic.all.first { $0.query == query.lowercased() }?.id
+            sidebar = Topic.all.first { $0.query == query.lowercased() }.map { .topic($0.query) }
             refreshToken += 1
         }
         .toolbar {
@@ -43,86 +56,94 @@ struct ContentView: View {
                     ForEach(Orientation.allCases) { Text($0.title).tag($0.rawValue) }
                 }
                 .pickerStyle(.segmented)
+                .disabled(showingFavorites)
             }
             ToolbarItem {
-                Picker("下载尺寸", selection: $sizeRaw) {
-                    ForEach(DownloadSize.allCases) { Text($0.title).tag($0.rawValue) }
-                }
-                .help("下载尺寸")
-            }
-            ToolbarItem {
-                Button("刷新", systemImage: "arrow.clockwise") { refreshToken += 1 }
+                Button("换一批", systemImage: "arrow.clockwise") { refreshToken += 1 }
                     .keyboardShortcut("r")
-                    .help("重新取片（忽略缓存）")
+                    .help("换一批（随机取片）")
+                    .disabled(showingFavorites)
             }
         }
         .task(id: LoadID(key: accessKey, query: query, orientation: orientationRaw, token: refreshToken)) {
-            await store.reload(key: accessKey, query: query, orientation: orientation, force: refreshToken > 0 && lastForcedToken != refreshToken)
-            lastForcedToken = refreshToken
+            await store.reload(key: accessKey, query: query, orientation: orientation)
         }
-        .onChange(of: topic) { _, new in
-            guard let new, new != query else { return }
-            query = new
-            searchText = ""
+        .onChange(of: sidebar) { _, new in
+            if case let .topic(q) = new, q != query {
+                query = q
+                searchText = ""
+            }
         }
         .onAppear {
-            topic = Topic.all.first { $0.query == query }?.id
-            if topic == nil { searchText = query }
+            sidebar = .topic(query)
+            if !Topic.all.contains(where: { $0.query == query }) { searchText = query }
         }
-        .alert("下载失败", isPresented: Binding(get: { store.downloadError != nil }, set: { if !$0 { store.downloadError = nil } })) {
-            Button("好") {}
-        } message: {
-            Text(store.downloadError ?? "")
+        .sheet(item: $viewing) { photo in
+            ViewerView(photo: photo, accessKey: accessKey)
         }
     }
 
-    @State private var lastForcedToken = 0
+    private var title: String {
+        showingFavorites ? "收藏" : (Topic.all.first { $0.query == query }?.title ?? query)
+    }
+
+    private var subtitle: String {
+        if showingFavorites { return favorites.photos.isEmpty ? "" : "\(favorites.photos.count) 张" }
+        return store.total > 0 ? "\(store.photos.count) / \(store.total)" : ""
+    }
 
     @ViewBuilder
     private var detail: some View {
-        switch store.phase {
-        case .idle where accessKey.isEmpty:
-            ContentUnavailableView {
-                Label("尚未配置 Access Key", systemImage: "key")
-            } description: {
-                Text("填入你的 Unsplash Access Key 后即可开始取片。")
-            } actions: {
-                Button("打开设置") { openSettings() }.buttonStyle(.borderedProminent)
+        if showingFavorites {
+            if favorites.photos.isEmpty {
+                ContentUnavailableView("还没有收藏", systemImage: "star", description: Text("把鼠标移到图片上，点右上角的星即可收藏。"))
+            } else {
+                grid(favorites.photos, paginated: false)
             }
-        case .idle, .loading:
-            ProgressView("正在取片…").frame(maxWidth: .infinity, maxHeight: .infinity)
-        case let .failed(message):
-            ContentUnavailableView {
-                Label("无法加载", systemImage: "exclamationmark.triangle")
-            } description: {
-                Text(message)
-            } actions: {
-                Button("重试") { refreshToken += 1 }
+        } else {
+            switch store.phase {
+            case .idle where accessKey.isEmpty:
+                ContentUnavailableView {
+                    Label("尚未配置 Access Key", systemImage: "key")
+                } description: {
+                    Text("填入你的 Unsplash Access Key 后即可开始取片。")
+                } actions: {
+                    Button("打开设置") { openSettings() }.buttonStyle(.borderedProminent)
+                }
+            case .idle, .loading:
+                ProgressView("正在取片…").frame(maxWidth: .infinity, maxHeight: .infinity)
+            case let .failed(message):
+                ContentUnavailableView {
+                    Label("无法加载", systemImage: "exclamationmark.triangle")
+                } description: {
+                    Text(message)
+                } actions: {
+                    Button("重试") { refreshToken += 1 }
+                }
+            case .ready where store.photos.isEmpty:
+                ContentUnavailableView.search(text: query)
+            case .ready:
+                grid(store.photos, paginated: true)
             }
-        case .ready where store.photos.isEmpty:
-            ContentUnavailableView.search(text: query)
-        case .ready:
-            grid
         }
     }
 
-    private var grid: some View {
-        ScrollView {
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 260, maximum: 420), spacing: 16)], spacing: 16) {
-                ForEach(store.photos) { photo in
-                    PhotoCard(photo: photo, isDownloading: store.downloadingID == photo.id) {
-                        Task { await store.download(photo, size: size, key: accessKey) }
-                    }
-                    .onAppear {
-                        if photo.id == store.photos.last?.id {
-                            Task { await store.loadMore(key: accessKey, query: query, orientation: orientation) }
-                        }
-                    }
+    private func grid(_ photos: [Photo], paginated: Bool) -> some View {
+        let tail = Set(photos.suffix(6).map(\.id))
+        return MasonryGrid(
+            photos: photos,
+            footer: paginated && store.loadingMore ? AnyView(ProgressView().controlSize(.small)) : nil
+        ) { photo, _ in
+            PhotoCard(
+                photo: photo,
+                isFavorite: favorites.contains(photo),
+                onOpen: { viewing = photo },
+                onToggleFavorite: { favorites.toggle(photo) }
+            )
+            .onAppear {
+                if paginated && tail.contains(photo.id) {
+                    Task { await store.loadMore(key: accessKey, query: query, orientation: orientation) }
                 }
-            }
-            .padding(20)
-            if store.loadingMore {
-                ProgressView().controlSize(.small).padding(.bottom, 20)
             }
         }
     }

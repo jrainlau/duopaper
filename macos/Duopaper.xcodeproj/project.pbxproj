@@ -3,31 +3,18 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		A000000000000000000000C8 = {isa = PBXBuildFile; fileRef = A00000000000000000000064; };
-		A000000000000000000000C9 = {isa = PBXBuildFile; fileRef = A00000000000000000000065; };
-		A000000000000000000000CA = {isa = PBXBuildFile; fileRef = A00000000000000000000066; };
-		A000000000000000000000CB = {isa = PBXBuildFile; fileRef = A00000000000000000000067; };
-		A000000000000000000000CC = {isa = PBXBuildFile; fileRef = A00000000000000000000068; };
-		A000000000000000000000CD = {isa = PBXBuildFile; fileRef = A00000000000000000000069; };
-		A000000000000000000000CE = {isa = PBXBuildFile; fileRef = A0000000000000000000006A; };
-/* End PBXBuildFile section */
-
 /* Begin PBXFileReference section */
-		A00000000000000000000064 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		A00000000000000000000065 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuopaperApp.swift; sourceTree = "<group>"; };
-		A00000000000000000000066 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
-		A00000000000000000000067 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCard.swift; sourceTree = "<group>"; };
-		A00000000000000000000068 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		A00000000000000000000069 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnsplashClient.swift; sourceTree = "<group>"; };
-		A0000000000000000000006A = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallpaperStore.swift; sourceTree = "<group>"; };
 		A00000000000000000000007 = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Duopaper.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A00000000000000000000011 = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A00000000000000000000012 = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Duopaper.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		A00000000000000000000004 = {isa = PBXFileSystemSynchronizedRootGroup; path = Sources/Duopaper; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		A00000000000000000000013 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
@@ -35,12 +22,11 @@
 
 /* Begin PBXGroup section */
 		A00000000000000000000003 = {isa = PBXGroup; children = (A00000000000000000000004, A00000000000000000000011, A00000000000000000000012, A00000000000000000000006); sourceTree = "<group>"; };
-		A00000000000000000000004 = {isa = PBXGroup; children = (A00000000000000000000064, A00000000000000000000065, A00000000000000000000066, A00000000000000000000067, A00000000000000000000068, A00000000000000000000069, A0000000000000000000006A); name = Duopaper; path = Sources/Duopaper; sourceTree = "<group>"; };
 		A00000000000000000000006 = {isa = PBXGroup; children = (A00000000000000000000007); name = Products; sourceTree = "<group>"; };
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A00000000000000000000002 = {isa = PBXNativeTarget; buildConfigurationList = A0000000000000000000000C; buildPhases = (A00000000000000000000008, A00000000000000000000013); buildRules = (); dependencies = (); name = Duopaper; productName = Duopaper; productReference = A00000000000000000000007; productType = "com.apple.product-type.application"; };
+		A00000000000000000000002 = {isa = PBXNativeTarget; buildConfigurationList = A0000000000000000000000C; buildPhases = (A00000000000000000000008, A00000000000000000000013); buildRules = (); dependencies = (); fileSystemSynchronizedGroups = (A00000000000000000000004); name = Duopaper; productName = Duopaper; productReference = A00000000000000000000007; productType = "com.apple.product-type.application"; };
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -48,7 +34,7 @@
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		A00000000000000000000008 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A000000000000000000000C8, A000000000000000000000C9, A000000000000000000000CA, A000000000000000000000CB, A000000000000000000000CC, A000000000000000000000CD, A000000000000000000000CE); runOnlyForDeploymentPostprocessing = 0; };
+		A00000000000000000000008 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */

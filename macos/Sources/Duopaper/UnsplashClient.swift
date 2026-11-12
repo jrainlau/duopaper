@@ -19,7 +19,7 @@ enum APIError: LocalizedError {
 }
 
 struct UnsplashClient {
-    static let perPage = 12
+    static let perPage = 30
     static let maxPage = 50
     static let cacheTTL: TimeInterval = 6 * 60 * 60
 
@@ -64,8 +64,14 @@ struct UnsplashClient {
         _ = try? await fetch(photo.links.downloadLocation)
     }
 
-    static func displayURL(_ photo: Photo) -> URL {
-        replacing(photo.urls.regular, ["w": "1000", "q": "80", "fm": "jpg"])
+    /// 瀑布流缩略图：640px / q75，体积小，Retina 下约 320pt 宽的列也足够清晰。
+    static func thumbURL(_ photo: Photo) -> URL {
+        replacing(photo.urls.regular, ["w": "640", "q": "75", "fm": "jpg"])
+    }
+
+    /// Viewer 中的预览图。
+    static func previewURL(_ photo: Photo) -> URL {
+        replacing(photo.urls.regular, ["w": "1600", "q": "85", "fm": "jpg"])
     }
 
     static func downloadURL(_ photo: Photo, size: DownloadSize) -> URL {
