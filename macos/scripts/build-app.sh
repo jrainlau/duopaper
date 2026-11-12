@@ -4,9 +4,15 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-xcodebuild -project Duopaper.xcodeproj -scheme Duopaper -configuration Release \
-  -derivedDataPath build/dd -skipMacroValidation -skipPackagePluginValidation ${XCODEBUILD_FLAGS:-} build \
-  | grep -E "error:|BUILD" || true
+rm -rf build/dd/Build/Products/Release/Duopaper.app
+LOG=build/xcodebuild.log
+mkdir -p build
+if ! xcodebuild -project Duopaper.xcodeproj -scheme Duopaper -configuration Release \
+  -derivedDataPath build/dd -skipMacroValidation -skipPackagePluginValidation ${XCODEBUILD_FLAGS:-} build >"$LOG" 2>&1; then
+  grep -E "error" "$LOG" | head -20
+  echo "构建失败，完整日志：macos/$LOG"
+  exit 1
+fi
 
 APP="build/Duopaper.app"
 rm -rf "$APP"
